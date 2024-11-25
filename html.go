@@ -26,11 +26,11 @@ func respondWithError(w http.ResponseWriter, code int, msg string, err error) {
 func respondWithHTML(w http.ResponseWriter, code int, tmpl *template.Template, data any) {
 	w.Header().Set("Content-Type", "text/html")
 
+	w.WriteHeader(code)
 	err := tmpl.Execute(w, data)
 	if err != nil {
 		http.Error(w, "Coudln't execute template", http.StatusInternalServerError)
 		return
 	}
 
-	w.WriteHeader(code)
 }
