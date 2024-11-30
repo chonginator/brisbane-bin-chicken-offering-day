@@ -1,3 +1,3 @@
 module github.com/chonginator/brisbane-bin-chicken-offering-day
 
-go 1.23.2
+go 1.23.0
