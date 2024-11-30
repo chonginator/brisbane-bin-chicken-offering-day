@@ -35,6 +35,6 @@ jobs:
         run: gcloud builds submit -t australia-southeast1-docker.pkg.dev/brisbane-bin-chicken-day/brisbane-bin-chicken-day-ar-repo/brisbane-bin-chicken-day:latest
 
       - name: Deploy to Cloud Run
-        run: gcloud run deploy --image australia-southeast1-docker.pkg.dev/brisbane-bin-chicken-day/brisbane-bin-chicken-day-ar-repo/brisbane-bin-chicken-day:latest --region australia-southeast1 --allow-unauthenticated --project brisbane-bin-chicken-day --max-instances=4
+        run: gcloud run deploy brisbane-bin-chicken-day --image australia-southeast1-docker.pkg.dev/brisbane-bin-chicken-day/brisbane-bin-chicken-day-ar-repo/brisbane-bin-chicken-day:latest --region australia-southeast1 --allow-unauthenticated --project brisbane-bin-chicken-day --max-instances=4
 
 
