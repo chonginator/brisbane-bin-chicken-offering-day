@@ -1,7 +1,6 @@
 package main
 
 import (
-	"html/template"
 	"log"
 	"net/http"
 	"time"
@@ -27,16 +26,4 @@ func main() {
 
 func handlerRoot(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/suburbs", http.StatusMovedPermanently)
-}
-
-func handlerSuburbs(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "text/html")
-
-	tmpl, err := template.ParseFiles("templates/layout.html", "templates/index.html")
-	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "Couldn't load template", err)
-		return
-	}
-
-	respondWithHTML(w, http.StatusOK, tmpl, nil)
 }

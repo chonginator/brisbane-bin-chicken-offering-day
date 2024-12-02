@@ -1,3 +1,8 @@
 {{ define "content" }}
 <h1>Brisbane Bin Chicken Day</h1>
+<div>
+  {{ range .Items}}
+  <div>{{ . }}</div>
+  {{ end }}
+</div>
 {{ end }}
