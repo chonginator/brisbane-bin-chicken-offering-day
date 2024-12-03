@@ -3,11 +3,22 @@ package main
 import (
 	"log"
 	"net/http"
+	"os"
 	"time"
+
+	"github.com/joho/godotenv"
 )
 
 func main() {
-	const port = "8080"
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatalf("Error loading .env file: %v", err)
+	}
+
+	port := os.Getenv("PORT")
+	if port == "" {
+		log.Fatalf("PORT environment variable is not set")
+	}
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", handlerRoot)
