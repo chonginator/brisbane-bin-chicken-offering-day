@@ -7,8 +7,6 @@ import (
 	"time"
 
 	"github.com/joho/godotenv"
-
-	_ "github.com/tursodatabase/libsql-client-go/libsql"
 )
 
 func main() {

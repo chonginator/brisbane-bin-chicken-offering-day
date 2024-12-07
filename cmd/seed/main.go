@@ -1,15 +1,17 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
-	"fmt"
+	"errors"
 	"log"
 	"os"
 	"path/filepath"
 
+	"github.com/chonginator/brisbane-bin-chicken-offering-day/internal/database"
+	"github.com/google/uuid"
 	"github.com/joho/godotenv"
-	// TODO: Import correct libsql client for Go
 	_ "github.com/tursodatabase/libsql-client-go/libsql"
 )
 
@@ -20,8 +22,6 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error loading suburbs data: %v", err)
 	}
-
-	fmt.Println(suburbs)
 
 	err = godotenv.Load()
 	if err != nil {
@@ -37,8 +37,13 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error connecting to database: %v", err)
 	}
+	defer db.Close()
+	dbQueries := database.New(db)
 
-	err = seedSuburbs(db, suburbs)
+	err = seedSuburbs(dbQueries, suburbs)
+	if err != nil {
+		log.Fatalf("Error seeding suburbs: %v", err)
+	}
 
 }
 
@@ -79,6 +84,21 @@ func loadAndProcessSuburbs(filename string) ([]string, error) {
 	return suburbs, nil
 }
 
-func seedSuburbs(db *sql.DB, suburbNames []string) error {
+func seedSuburbs(db *database.Queries, suburbNames []string) error {
+	if db == nil {
+		return errors.New("database connection is nil")
+	}
+
+	for _, suburbName := range suburbNames {
+			_, err := db.CreateSuburb(context.Background(), database.CreateSuburbParams{
+				ID: uuid.New(),
+				Name: suburbName,
+			})
+
+			if err != nil {
+				return err
+			}
+	}
+
 	return nil
 }
