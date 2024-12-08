@@ -13,6 +13,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/joho/godotenv"
 	_ "github.com/tursodatabase/libsql-client-go/libsql"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 func main() {
@@ -78,7 +80,8 @@ func loadAndProcessSuburbs(filename string) ([]string, error) {
 	suburbs := []string{}
 
 	for suburbName := range suburbsSet {
-		suburbs = append(suburbs, suburbName)
+		caser := cases.Title(language.English)
+		suburbs = append(suburbs, caser.String(suburbName))
 	}
 
 	return suburbs, nil
