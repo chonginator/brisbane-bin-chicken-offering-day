@@ -1,8 +1,9 @@
-package migrations
+package schema
 
 import (
 	"context"
 	"database/sql"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/pressly/goose/v3"
@@ -23,6 +24,7 @@ func UpTitleCase(ctx context.Context, tx *sql.Tx) error {
   }
   defer rows.Close()
 
+  caser := cases.Title(language.English)
   for rows.Next() {
     var id uuid.UUID
     var name string
@@ -32,7 +34,6 @@ func UpTitleCase(ctx context.Context, tx *sql.Tx) error {
       return err
     }
 
-    caser := cases.Title(language.English)
     titleCasedName := caser.String(name)
 
     _, err = tx.ExecContext(ctx, `
@@ -46,12 +47,46 @@ func UpTitleCase(ctx context.Context, tx *sql.Tx) error {
   }
 
   if rows.Err() != nil {
-    return err
+    return rows.Err()
   }
 
   return nil
 }
 
 func DownTitleCase(ctx context.Context, tx *sql.Tx) error {
+  rows, err := tx.QueryContext(ctx, `
+    SELECT id, name FROM suburbs
+  `)
+  if err != nil {
+    return err
+  }
+  defer rows.Close()
+
+  for rows.Next() {
+    var id uuid.UUID
+    var name string
+
+    err = rows.Scan(&id, &name)
+    if err != nil {
+      return err
+    }
+
+    upperCaseName := strings.ToUpper(name)
+
+    _, err = tx.ExecContext(ctx, `
+      UPDATE suburbs
+      SET name = ?
+      WHERE id = ?
+    `, upperCaseName, id)
+
+    if err != nil {
+      return err
+    }
+  }
+
+  if rows.Err() != nil {
+    return rows.Err()
+  }
+
   return nil
 }
