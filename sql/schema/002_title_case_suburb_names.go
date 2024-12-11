@@ -38,7 +38,7 @@ func UpTitleCase(ctx context.Context, tx *sql.Tx) error {
 
     _, err = tx.ExecContext(ctx, `
       UPDATE suburbs
-      SET name = ?
+      SET name = ?, updated_at = datetime('now', 'utc')
       WHERE id = ?
     `, titleCasedName, id)
     if err != nil {
@@ -75,7 +75,7 @@ func DownTitleCase(ctx context.Context, tx *sql.Tx) error {
 
     _, err = tx.ExecContext(ctx, `
       UPDATE suburbs
-      SET name = ?
+      SET name = ?, updated_at = datetime('now', 'utc')
       WHERE id = ?
     `, upperCaseName, id)
 
