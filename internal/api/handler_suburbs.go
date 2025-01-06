@@ -5,6 +5,10 @@ import (
 	"net/http"
 )
 
+type SuburbsPageData struct {
+	SuburbNames []string
+}
+
 func (cfg *Config) HandlerSuburbs(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
 
@@ -14,5 +18,9 @@ func (cfg *Config) HandlerSuburbs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	respondWithHTML(w, http.StatusOK, tmpl, cfg.suburbNames)
+	data := SuburbsPageData{
+		SuburbNames: cfg.suburbNames,
+	}
+
+	respondWithHTML(w, http.StatusOK, tmpl, data)
 }
