@@ -1,13 +1,20 @@
 package main
 
 import (
+	"database/sql"
 	"log"
 	"net/http"
 	"os"
 	"time"
 
+	"github.com/chonginator/brisbane-bin-chicken-offering-day/internal/database"
 	"github.com/joho/godotenv"
+	_ "github.com/tursodatabase/libsql-client-go/libsql"
 )
+
+type apiConfig struct {
+	db *database.Queries
+}
 
 func main() {
 	err := godotenv.Load()
@@ -20,9 +27,25 @@ func main() {
 		log.Fatalf("PORT environment variable is not set")
 	}
 
+	dbURL := os.Getenv("DATABASE_URL")
+	if dbURL == "" {
+		log.Fatalf("DATABASE_URL environment variable is not set")
+	}
+
+	db, err := sql.Open("libsql", dbURL)
+	if err != nil {
+		log.Fatalf("Error connecting to database: %v", err)
+	}
+	defer db.Close()
+	dbQueries := database.New(db)
+
+	apiCfg := apiConfig{
+		db: dbQueries,
+	}
+
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", handlerRoot)
-	mux.HandleFunc("/suburbs", handlerSuburbs)
+	mux.HandleFunc("/suburbs", apiCfg.handlerSuburbs)
 
 	srv := &http.Server{
 		Addr:              ":" + port,

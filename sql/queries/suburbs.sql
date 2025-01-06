@@ -7,3 +7,6 @@ VALUES (
   :name
 )
 RETURNING *;
+
+-- name: GetSuburbs :many
+SELECT * FROM suburbs;

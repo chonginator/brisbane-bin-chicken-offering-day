@@ -36,3 +36,35 @@ func (q *Queries) CreateSuburb(ctx context.Context, arg CreateSuburbParams) (Sub
 	)
 	return i, err
 }
+
+const getSuburbs = `-- name: GetSuburbs :many
+SELECT id, created_at, updated_at, name FROM suburbs
+`
+
+func (q *Queries) GetSuburbs(ctx context.Context) ([]Suburb, error) {
+	rows, err := q.db.QueryContext(ctx, getSuburbs)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Suburb
+	for rows.Next() {
+		var i Suburb
+		if err := rows.Scan(
+			&i.ID,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.Name,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}

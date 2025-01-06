@@ -1,12 +1,19 @@
 package main
 
 import (
+	"context"
 	"html/template"
 	"net/http"
 )
 
-func handlerSuburbs(w http.ResponseWriter, r *http.Request) {
+func (cfg *apiConfig) handlerSuburbs(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
+
+	suburbs, err := cfg.db.GetSuburbs(context.Background())
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Couldn't load suburbs", err)
+		return
+	}
 
 	tmpl, err := template.ParseFiles("templates/layout.html", "templates/index.html")
 	if err != nil {
@@ -14,14 +21,12 @@ func handlerSuburbs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data := struct {
-		Items []string
-	}{
-		Items: []string{
-			"Carindale",
-			"Carina",
-			"Carina Heights",
-		},
+	data := struct{
+		SuburbNames []string
+	}{}
+
+	for _, suburb := range suburbs {
+		data.SuburbNames = append(data.SuburbNames, suburb.Name)
 	}
 
 	respondWithHTML(w, http.StatusOK, tmpl, data)
