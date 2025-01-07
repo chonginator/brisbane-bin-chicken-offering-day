@@ -94,7 +94,7 @@ func seedSuburbs(db *database.Queries, suburbNames []string) error {
 
 	for _, suburbName := range suburbNames {
 		_, err := db.CreateSuburb(context.Background(), database.CreateSuburbParams{
-			ID: uuid.New(),
+			ID:   uuid.New(),
 			Name: suburbName,
 		})
 

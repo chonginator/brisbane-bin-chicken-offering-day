@@ -9,7 +9,7 @@ import (
 )
 
 type Config struct {
-	db *database.Queries
+	db          *database.Queries
 	suburbNames []string
 }
 
@@ -33,10 +33,9 @@ func NewAPIConfig(dbURL string) (*Config, error) {
 	}
 
 	apiCfg := &Config{
-		db: dbQueries,
+		db:          dbQueries,
 		suburbNames: suburbNames,
 	}
 
 	return apiCfg, nil
 }
-

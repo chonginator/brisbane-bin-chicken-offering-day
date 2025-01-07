@@ -12,81 +12,81 @@ import (
 )
 
 func init() {
-  goose.AddMigrationContext(UpTitleCase, DownTitleCase)
+	goose.AddMigrationContext(UpTitleCase, DownTitleCase)
 }
 
 func UpTitleCase(ctx context.Context, tx *sql.Tx) error {
-  rows, err := tx.QueryContext(ctx, `
+	rows, err := tx.QueryContext(ctx, `
     SELECT id, name FROM suburbs
   `)
-  if err != nil {
-    return err
-  }
-  defer rows.Close()
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
 
-  caser := cases.Title(language.English)
-  for rows.Next() {
-    var id uuid.UUID
-    var name string
+	caser := cases.Title(language.English)
+	for rows.Next() {
+		var id uuid.UUID
+		var name string
 
-    err := rows.Scan(&id, &name)
-    if err != nil {
-      return err
-    }
+		err := rows.Scan(&id, &name)
+		if err != nil {
+			return err
+		}
 
-    titleCasedName := caser.String(name)
+		titleCasedName := caser.String(name)
 
-    _, err = tx.ExecContext(ctx, `
+		_, err = tx.ExecContext(ctx, `
       UPDATE suburbs
       SET name = ?, updated_at = datetime('now', 'utc')
       WHERE id = ?
     `, titleCasedName, id)
-    if err != nil {
-      return err
-    }
-  }
+		if err != nil {
+			return err
+		}
+	}
 
-  if rows.Err() != nil {
-    return rows.Err()
-  }
+	if rows.Err() != nil {
+		return rows.Err()
+	}
 
-  return nil
+	return nil
 }
 
 func DownTitleCase(ctx context.Context, tx *sql.Tx) error {
-  rows, err := tx.QueryContext(ctx, `
+	rows, err := tx.QueryContext(ctx, `
     SELECT id, name FROM suburbs
   `)
-  if err != nil {
-    return err
-  }
-  defer rows.Close()
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
 
-  for rows.Next() {
-    var id uuid.UUID
-    var name string
+	for rows.Next() {
+		var id uuid.UUID
+		var name string
 
-    err = rows.Scan(&id, &name)
-    if err != nil {
-      return err
-    }
+		err = rows.Scan(&id, &name)
+		if err != nil {
+			return err
+		}
 
-    upperCaseName := strings.ToUpper(name)
+		upperCaseName := strings.ToUpper(name)
 
-    _, err = tx.ExecContext(ctx, `
+		_, err = tx.ExecContext(ctx, `
       UPDATE suburbs
       SET name = ?, updated_at = datetime('now', 'utc')
       WHERE id = ?
     `, upperCaseName, id)
 
-    if err != nil {
-      return err
-    }
-  }
+		if err != nil {
+			return err
+		}
+	}
 
-  if rows.Err() != nil {
-    return rows.Err()
-  }
+	if rows.Err() != nil {
+		return rows.Err()
+	}
 
-  return nil
+	return nil
 }
