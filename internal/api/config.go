@@ -6,14 +6,16 @@ import (
 	"fmt"
 	"html/template"
 	"path/filepath"
+	"sort"
+	"strings"
 
 	"github.com/chonginator/brisbane-bin-chicken-offering-day/internal/database"
 )
 
 type Config struct {
-	db          *database.Queries
-	suburbNames []string
-	templates   map[string]*template.Template
+	db        *database.Queries
+	suburbs   []Suburb
+	templates map[string]*template.Template
 }
 
 func NewAPIConfig(dbURL string) (*Config, error) {
@@ -21,19 +23,25 @@ func NewAPIConfig(dbURL string) (*Config, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error connecting to database: %w", err)
 	}
-	defer db.Close()
 
 	dbQueries := database.New(db)
 
-	suburbs, err := dbQueries.GetSuburbs(context.Background())
+	dbSuburbs, err := dbQueries.GetSuburbs(context.Background())
 	if err != nil {
 		return nil, fmt.Errorf("error getting suburbs from database: %w", err)
 	}
 
-	suburbNames := make([]string, 0, len(suburbs))
-	for _, suburb := range suburbs {
-		suburbNames = append(suburbNames, suburb.Name)
+	suburbs := make([]Suburb, 0, len(dbSuburbs))
+	for _, suburb := range dbSuburbs {
+		suburbs = append(suburbs, Suburb{
+			Name: suburb.Name,
+			Slug: toSlug(suburb.Name),
+		})
 	}
+
+	sort.Slice(suburbs, func(i, j int) bool {
+		return suburbs[i].Name < suburbs[j].Name
+	})
 
 	templates, err := parseTemplates()
 	if err != nil {
@@ -41,12 +49,16 @@ func NewAPIConfig(dbURL string) (*Config, error) {
 	}
 
 	apiCfg := &Config{
-		db:          dbQueries,
-		suburbNames: suburbNames,
-		templates:   templates,
+		db:        dbQueries,
+		suburbs:   suburbs,
+		templates: templates,
 	}
 
 	return apiCfg, nil
+}
+
+func toSlug(name string) string {
+	return strings.Join(strings.Split(strings.ToLower(name), " "), "-")
 }
 
 func parseTemplates() (map[string]*template.Template, error) {
