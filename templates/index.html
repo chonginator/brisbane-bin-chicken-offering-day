@@ -2,7 +2,7 @@
 <h1>Brisbane Bin Chicken Day</h1>
 <div>
   {{ range .Suburbs }}
-  <a href="{{ .Slug }}">{{ .Name }}</a>
+  <a href="/suburbs/{{ .Slug }}">{{ .Name }}</a>
   {{ end }}
 </div>
 {{ end }}
