@@ -67,7 +67,6 @@ func parseTemplates() (map[string]*template.Template, error) {
 		return nil, fmt.Errorf("error finding templates: %w", err)
 	}
 
-	// TODO: Fix map error
 	templates := make(map[string]*template.Template)
 	layoutFile := "templates/layout.html"
 
