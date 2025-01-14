@@ -6,10 +6,20 @@ package database
 
 import (
 	"time"
+
+	"github.com/google/uuid"
 )
 
+type Street struct {
+	ID         uuid.UUID
+	CreatedAt  time.Time
+	UpdatedAt  time.Time
+	StreetName string
+	SuburbID   uuid.UUID
+}
+
 type Suburb struct {
-	ID        interface{}
+	ID        uuid.UUID
 	CreatedAt time.Time
 	UpdatedAt time.Time
 	Name      string

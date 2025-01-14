@@ -7,6 +7,8 @@ package database
 
 import (
 	"context"
+
+	"github.com/google/uuid"
 )
 
 const createSuburb = `-- name: CreateSuburb :one
@@ -21,7 +23,7 @@ RETURNING id, created_at, updated_at, name
 `
 
 type CreateSuburbParams struct {
-	ID   interface{}
+	ID   uuid.UUID
 	Name string
 }
 
