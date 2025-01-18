@@ -12,7 +12,7 @@ CREATE TABLE addresses (
   zone TEXT NOT NULL,
   FOREIGN KEY (street_id) REFERENCES streets(id) ON DELETE CASCADE,
   CHECK (collection_day IN ('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday')),
-  CHECK (zone IN ('1', '2'))
+  CHECK (zone IN ('Zone 1', 'Zone 2'))
 );
 
 -- +goose Down
