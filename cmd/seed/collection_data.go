@@ -23,9 +23,9 @@ type CollectionRecord struct {
 }
 
 type Street struct {
-	ID         uuid.UUID
-	Name string
-	SuburbID   uuid.UUID
+	ID       uuid.UUID
+	Name     string
+	SuburbID uuid.UUID
 }
 
 type Address struct {
@@ -81,9 +81,9 @@ func seedCollectionData(db *sql.DB, filepath string) error {
 		} else {
 			streetID = uuid.New()
 			streetMap[streetKey] = Street{
-				ID:         streetID,
-				Name: record.StreetName,
-				SuburbID:   suburbID,
+				ID:       streetID,
+				Name:     record.StreetName,
+				SuburbID: suburbID,
 			}
 		}
 
@@ -130,8 +130,8 @@ func seedStreets(db *sql.DB, streets []Street) error {
 
 	for _, street := range streets {
 		_, err := qtx.CreateStreet(context.Background(), database.CreateStreetParams{
-			ID: street.ID,
-			Name: street.Name,
+			ID:       street.ID,
+			Name:     street.Name,
 			SuburbID: street.SuburbID,
 		})
 		if err != nil {
@@ -156,7 +156,7 @@ func seedAddresses(db *sql.DB, addresses []Address) error {
 		if address.HouseNumberSuffix != nil {
 			houseNumberSuffix = sql.NullString{
 				String: *address.HouseNumberSuffix,
-				Valid: true,
+				Valid:  true,
 			}
 		}
 
@@ -164,20 +164,20 @@ func seedAddresses(db *sql.DB, addresses []Address) error {
 		if address.UnitNumber != nil {
 			unitNumber = sql.NullString{
 				String: *address.UnitNumber,
-				Valid: true,
+				Valid:  true,
 			}
 		}
 
 		_, err := qtx.CreateAddress(context.Background(), database.CreateAddressParams{
-			ID: address.ID,
-			PropertyID: address.PropertyID,
-			UnitNumber: unitNumber,
-			HouseNumber: address.HouseNumber,
+			ID:                address.ID,
+			PropertyID:        address.PropertyID,
+			UnitNumber:        unitNumber,
+			HouseNumber:       address.HouseNumber,
 			HouseNumberSuffix: houseNumberSuffix,
-			StreetID: address.StreetID,
-			CollectionDay: address.CollectionDay,
-			Zone: address.Zone,
-		})	
+			StreetID:          address.StreetID,
+			CollectionDay:     address.CollectionDay,
+			Zone:              address.Zone,
+		})
 		if err != nil {
 			return fmt.Errorf("error creating address: %w", err)
 		}
