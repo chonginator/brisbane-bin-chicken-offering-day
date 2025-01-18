@@ -5,10 +5,24 @@
 package database
 
 import (
+	"database/sql"
 	"time"
 
 	"github.com/google/uuid"
 )
+
+type Address struct {
+	ID                uuid.UUID
+	CreatedAt         time.Time
+	UpdatedAt         time.Time
+	PropertyID        string
+	UnitNumber        sql.NullString
+	HouseNumber       string
+	HouseNumberSuffix sql.NullString
+	StreetID          uuid.UUID
+	CollectionDay     string
+	Zone              string
+}
 
 type Street struct {
 	ID        uuid.UUID
