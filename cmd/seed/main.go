@@ -47,7 +47,7 @@ func main() {
 		log.Fatalf("Error seeding suburbs: %v", err)
 	}
 
-	err = seedCollectionData(dbQueries, collectionsPath)
+	err = seedCollectionData(db, collectionsPath)
 	if err != nil {
 		log.Fatalf("Error loading collections data: %v", err)
 	}

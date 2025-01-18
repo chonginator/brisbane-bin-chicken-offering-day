@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -38,11 +39,12 @@ type Address struct {
 	Zone              string
 }
 
-func seedCollectionData(db *database.Queries, filepath string) error {
+func seedCollectionData(db *sql.DB, filepath string) error {
 	collectionData, err := os.Open(filepath)
 	if err != nil {
 		return err
 	}
+	defer collectionData.Close()
 
 	collectionRecords := []CollectionRecord{}
 	decoder := json.NewDecoder(collectionData)
@@ -51,8 +53,10 @@ func seedCollectionData(db *database.Queries, filepath string) error {
 		return err
 	}
 
+	dbQueries := database.New(db)
+
 	suburbMap := make(map[string]uuid.UUID)
-	suburbs, err := db.GetSuburbs(context.Background())
+	suburbs, err := dbQueries.GetSuburbs(context.Background())
 	if err != nil {
 		return fmt.Errorf("error getting suburbs: %w", err)
 	}
@@ -115,9 +119,17 @@ func seedCollectionData(db *database.Queries, filepath string) error {
 	return nil
 }
 
-func seedStreets(db *database.Queries, streets []Street) error {
+func seedStreets(db *sql.DB, streets []Street) error {
+	tx, err := db.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	qtx := database.New(tx)
+
 	for _, street := range streets {
-		_, err := db.CreateStreet(context.Background(), database.CreateStreetParams{
+		_, err := qtx.CreateStreet(context.Background(), database.CreateStreetParams{
 			ID: street.ID,
 			Name: street.Name,
 			SuburbID: street.SuburbID,
@@ -126,9 +138,49 @@ func seedStreets(db *database.Queries, streets []Street) error {
 			return fmt.Errorf("error creating street: %w", err)
 		}
 	}
-	return nil
+
+	return tx.Commit()
 }
 
-func seedAddresses(db *database.Queries, addresses []Address) error {
+func seedAddresses(db *sql.DB, addresses []Address) error {
+	tx, err := db.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	qtx := database.New(tx)
+
+	for _, address := range addresses {
+		var houseNumberSuffix sql.NullString
+		if address.HouseNumberSuffix != nil {
+			houseNumberSuffix = sql.NullString{
+				String: *address.HouseNumberSuffix,
+				Valid: true,
+			}
+		}
+
+		var unitNumber sql.NullString
+		if address.UnitNumber != nil {
+			unitNumber = sql.NullString{
+				String: *address.UnitNumber,
+				Valid: true,
+			}
+		}
+
+		_, err := qtx.CreateAddress(context.Background(), database.CreateAddressParams{
+			ID: address.ID,
+			PropertyID: address.PropertyID,
+			UnitNumber: unitNumber,
+			HouseNumber: address.HouseNumber,
+			HouseNumberSuffix: houseNumberSuffix,
+			StreetID: address.StreetID,
+			CollectionDay: address.CollectionDay,
+			Zone: address.Zone,
+		})	
+		if err != nil {
+			return fmt.Errorf("error creating address: %w", err)
+		}
+	}
 	return nil
 }
