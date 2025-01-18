@@ -6,7 +6,6 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/chonginator/brisbane-bin-chicken-offering-day/internal/database"
 	"github.com/joho/godotenv"
 	_ "github.com/tursodatabase/libsql-client-go/libsql"
 )
@@ -22,10 +21,10 @@ func main() {
 		dataDir = "data"
 	}
 
-	suburbsPath := filepath.Join(dataDir, "suburbs-and-adjoining-suburbs.json")
+	// suburbsPath := filepath.Join(dataDir, "suburbs-and-adjoining-suburbs.json")
 	collectionsPath := filepath.Join(dataDir, "waste-collection-days-collection-days.json")
 
-	suburbs, err := loadAndProcessSuburbs(suburbsPath)
+	// suburbs, err := loadAndProcessSuburbs(suburbsPath)
 	if err != nil {
 		log.Fatalf("Error loading suburbs data: %v", err)
 	}
