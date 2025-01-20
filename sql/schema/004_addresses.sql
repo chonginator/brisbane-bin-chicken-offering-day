@@ -3,7 +3,7 @@ CREATE TABLE addresses (
   id UUID PRIMARY KEY,
   created_at TIMESTAMP NOT NULL,
   updated_at TIMESTAMP NOT NULL,
-  property_id TEXT NOT NULL UNIQUE,
+  property_id TEXT NOT NULL,
   unit_number TEXT,
   house_number TEXT NOT NULL,
   house_number_suffix TEXT,
