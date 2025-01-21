@@ -8,3 +8,10 @@ VALUES (
   :suburb_id
 )
 RETURNING *;
+
+-- name: GetStreetsBySuburbName :many
+SELECT * FROM streets
+WHERE suburb_id = (
+  SELECT id FROM suburbs
+  WHERE suburbs.name = :name
+);

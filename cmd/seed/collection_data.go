@@ -81,7 +81,6 @@ func seedCollectionData(db *sql.DB, filepath string) error {
 
 		streetKey := titleCasedStreetName + ":" + titleCasedSuburb
 
-
 		suburbID, ok := suburbMap[titleCasedSuburb]
 		if !ok {
 			return fmt.Errorf("suburb not found: %s", titleCasedSuburb)
@@ -227,7 +226,7 @@ func processBatch[T any](items []T, batchSize int, process func([]T) error) erro
 		if end > len(items) {
 			end = len(items)
 		}
-		
+
 		if err := process(items[i:end]); err != nil {
 			return err
 		}

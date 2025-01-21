@@ -10,3 +10,7 @@ RETURNING *;
 
 -- name: GetSuburbs :many
 SELECT * FROM suburbs;
+
+-- name: GetSuburbIdByName :one
+SELECT * FROM suburbs
+WHERE name = :name;

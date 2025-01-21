@@ -39,6 +39,23 @@ func (q *Queries) CreateSuburb(ctx context.Context, arg CreateSuburbParams) (Sub
 	return i, err
 }
 
+const getSuburbIdByName = `-- name: GetSuburbIdByName :one
+SELECT id, created_at, updated_at, name FROM suburbs
+WHERE name = ?1
+`
+
+func (q *Queries) GetSuburbIdByName(ctx context.Context, name string) (Suburb, error) {
+	row := q.db.QueryRowContext(ctx, getSuburbIdByName, name)
+	var i Suburb
+	err := row.Scan(
+		&i.ID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.Name,
+	)
+	return i, err
+}
+
 const getSuburbs = `-- name: GetSuburbs :many
 SELECT id, created_at, updated_at, name FROM suburbs
 `

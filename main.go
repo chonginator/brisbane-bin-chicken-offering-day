@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/chonginator/brisbane-bin-chicken-offering-day/internal/api"
+	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 	_ "github.com/tursodatabase/libsql-client-go/libsql"
 )
@@ -32,9 +33,10 @@ func main() {
 		log.Fatalf("Error initializing API config: %v", err)
 	}
 
-	mux := http.NewServeMux()
+	mux := mux.NewRouter()
 	mux.HandleFunc("/", apiCfg.HandlerRoot)
 	mux.HandleFunc("/suburbs", apiCfg.HandlerSuburbs)
+	mux.HandleFunc("/suburbs/{suburb}/streets", apiCfg.HandlerStreets)
 
 	srv := &http.Server{
 		Addr:              ":" + port,

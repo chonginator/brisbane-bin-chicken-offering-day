@@ -10,6 +10,8 @@ import (
 	"strings"
 
 	"github.com/chonginator/brisbane-bin-chicken-offering-day/internal/database"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 type Config struct {
@@ -59,6 +61,11 @@ func NewAPIConfig(dbURL string) (*Config, error) {
 
 func toSlug(name string) string {
 	return strings.Join(strings.Split(strings.ToLower(name), " "), "-")
+}
+
+func fromSlug(name string) string {
+	caser := cases.Title(language.English)
+	return caser.String(strings.Join(strings.Split(name, "-"), " "))
 }
 
 func parseTemplates() (map[string]*template.Template, error) {
