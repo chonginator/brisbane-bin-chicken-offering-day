@@ -1,0 +1,10 @@
+{{ define "content "}}
+<h2>Addresses</h2>
+<div>
+  {{ range .Addresses}}
+  <a href="./{{ .Slug }}/collections">
+    {{ .AddressString }}
+  </a>
+  {{ end }}
+</div>
+{{ end }}

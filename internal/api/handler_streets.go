@@ -27,6 +27,7 @@ func (cfg *Config) HandlerStreets(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		err = fmt.Errorf("couldn't find streets for %s: %w", suburbName, err)
 		respondWithError(w, http.StatusInternalServerError, err.Error(), err)
+		return
 	}
 
 	streets := make([]Street, len(dbStreets))

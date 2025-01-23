@@ -37,6 +37,7 @@ func main() {
 	mux.HandleFunc("/", apiCfg.HandlerRoot)
 	mux.HandleFunc("/suburbs", apiCfg.HandlerSuburbs)
 	mux.HandleFunc("/suburbs/{suburb}/streets", apiCfg.HandlerStreets)
+	mux.HandleFunc("/suburbs/{suburb}/streets/{street}/addresses", apiCfg.HandlerAddresses)
 
 	srv := &http.Server{
 		Addr:              ":" + port,
