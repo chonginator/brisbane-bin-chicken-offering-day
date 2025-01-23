@@ -24,3 +24,10 @@ VALUES (
   :zone
 )
 RETURNING *;
+
+-- name: GetAddressesByStreetName :many
+SELECT addresses.*
+FROM addresses
+INNER JOIN streets
+ON addresses.street_id = street.id
+WHERE streets.name = :name;

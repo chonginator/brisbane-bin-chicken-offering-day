@@ -77,3 +77,45 @@ func (q *Queries) CreateAddress(ctx context.Context, arg CreateAddressParams) (A
 	)
 	return i, err
 }
+
+const getAddressesByStreetName = `-- name: GetAddressesByStreetName :many
+SELECT addresses.id, addresses.created_at, addresses.updated_at, addresses.property_id, addresses.unit_number, addresses.house_number, addresses.house_number_suffix, addresses.street_id, addresses.collection_day, addresses.zone
+FROM addresses
+INNER JOIN streets
+ON addresses.street_id = street.id
+WHERE streets.name = ?1
+`
+
+func (q *Queries) GetAddressesByStreetName(ctx context.Context, name string) ([]Address, error) {
+	rows, err := q.db.QueryContext(ctx, getAddressesByStreetName, name)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Address
+	for rows.Next() {
+		var i Address
+		if err := rows.Scan(
+			&i.ID,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.PropertyID,
+			&i.UnitNumber,
+			&i.HouseNumber,
+			&i.HouseNumberSuffix,
+			&i.StreetID,
+			&i.CollectionDay,
+			&i.Zone,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
