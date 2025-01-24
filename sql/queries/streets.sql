@@ -15,3 +15,9 @@ FROM streets
 INNER JOIN suburbs
 ON streets.suburb_id = suburbs.id
 WHERE suburbs.name = :name;
+
+-- name: GetStreetsWithSuburb :many
+SELECT streets.*, streets.name AS street_name, suburbs.*, suburbs.name AS suburb_name
+FROM streets
+INNER JOIN suburbs
+ON streets.suburb_id = suburbs.id;

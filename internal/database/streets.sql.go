@@ -7,6 +7,7 @@ package database
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -65,6 +66,62 @@ func (q *Queries) GetStreetsBySuburbName(ctx context.Context, name string) ([]St
 			&i.UpdatedAt,
 			&i.Name,
 			&i.SuburbID,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getStreetsWithSuburb = `-- name: GetStreetsWithSuburb :many
+SELECT streets.id, streets.created_at, streets.updated_at, streets.name, streets.suburb_id, streets.name AS street_name, suburbs.id, suburbs.created_at, suburbs.updated_at, suburbs.name, suburbs.name AS suburb_name
+FROM streets
+INNER JOIN suburbs
+ON streets.suburb_id = suburbs.id
+`
+
+type GetStreetsWithSuburbRow struct {
+	ID          uuid.UUID
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
+	Name        string
+	SuburbID    uuid.UUID
+	StreetName  string
+	ID_2        uuid.UUID
+	CreatedAt_2 time.Time
+	UpdatedAt_2 time.Time
+	Name_2      string
+	SuburbName  string
+}
+
+func (q *Queries) GetStreetsWithSuburb(ctx context.Context) ([]GetStreetsWithSuburbRow, error) {
+	rows, err := q.db.QueryContext(ctx, getStreetsWithSuburb)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetStreetsWithSuburbRow
+	for rows.Next() {
+		var i GetStreetsWithSuburbRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.Name,
+			&i.SuburbID,
+			&i.StreetName,
+			&i.ID_2,
+			&i.CreatedAt_2,
+			&i.UpdatedAt_2,
+			&i.Name_2,
+			&i.SuburbName,
 		); err != nil {
 			return nil, err
 		}

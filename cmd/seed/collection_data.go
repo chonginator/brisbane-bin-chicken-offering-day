@@ -62,17 +62,34 @@ func seedCollectionData(db *sql.DB, filepath string) error {
 	dbQueries := database.New(db)
 
 	suburbMap := make(map[string]uuid.UUID)
-	suburbs, err := dbQueries.GetSuburbs(context.Background())
+	dbSuburbs, err := dbQueries.GetSuburbs(context.Background())
 	if err != nil {
 		return fmt.Errorf("error getting suburbs: %w", err)
 	}
-	for _, suburb := range suburbs {
+	for _, suburb := range dbSuburbs {
 		suburbMap[suburb.Name] = suburb.ID
 	}
 
 	caser := cases.Title(language.English)
 
 	streetMap := make(map[string]Street)
+	dbStreets, err := dbQueries.GetStreetsWithSuburb(context.Background())
+	if err != nil {
+		return fmt.Errorf("error getting streets: %w", err)
+	}
+	for _, street := range dbStreets {
+		titleCasedStreetName := caser.String(street.StreetName)
+		titleCasedSuburb := caser.String(street.SuburbName)
+
+		streetKey := titleCasedStreetName + ":" + titleCasedSuburb
+
+		streetMap[streetKey] = Street{
+			ID: street.ID,
+			Name: titleCasedStreetName,
+			SuburbID: street.ID_2,
+		}
+	}
+
 	var addresses []Address
 
 	for _, record := range collectionRecords {
