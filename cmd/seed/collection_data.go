@@ -181,16 +181,17 @@ func seedStreets(db *sql.DB, streets []Street) error {
 }
 
 func seedAddresses(db *sql.DB, addresses []Address) error {
-	tx, err := db.Begin()
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback()
-
-	qtx := database.New(tx)
-
+	
 	startTime := time.Now()
-	err = processBatch(addresses, defaultBatchSize, func(batch []Address) error {
+	err := processBatch(addresses, defaultBatchSize, func(batch []Address) error {
+		tx, err := db.Begin()
+		if err != nil {
+			return err
+		}
+		defer tx.Rollback()
+
+		qtx := database.New(tx)
+
 		for _, address := range batch {
 			var houseNumberSuffix sql.NullString
 			if address.HouseNumberSuffix != nil {
@@ -219,19 +220,21 @@ func seedAddresses(db *sql.DB, addresses []Address) error {
 				Zone:              address.Zone,
 			})
 			if err != nil {
+				log.Printf("Failed on propertyID: %s, street: %s", address.PropertyID, address.StreetID)
 				return fmt.Errorf("error creating address: %w", err)
 			}
 		}
-		return nil
+
+		return tx.Commit()
 	})
+
 	if err != nil {
 		return err
 	}
 
 	totalDuration := time.Since(startTime)
 	log.Printf("Address seeding completed in: %v", totalDuration)
-
-	return tx.Commit()
+	return nil
 }
 
 func processBatch[T any](items []T, batchSize int, process func([]T) error) error {
