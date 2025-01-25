@@ -1,7 +1,6 @@
 -- +goose Up
 CREATE UNIQUE INDEX unique_address
 ON addresses (
-  property_id,
   unit_number,
   house_number,
   house_number_suffix,
