@@ -39,12 +39,12 @@ func main() {
 		log.Fatalf("Error connecting to database: %v", err)
 	}
 	defer db.Close()
-	dbQueries := database.New(db)
+	// dbQueries := database.New(db)
 
-	err = seedSuburbs(dbQueries, suburbs)
-	if err != nil {
-		log.Fatalf("Error seeding suburbs: %v", err)
-	}
+	// err = seedSuburbs(dbQueries, suburbs)
+	// if err != nil {
+	// 	log.Fatalf("Error seeding suburbs: %v", err)
+	// }
 
 	err = seedCollectionData(db, collectionsPath)
 	if err != nil {
