@@ -119,20 +119,3 @@ func (q *Queries) GetAddressesByStreetName(ctx context.Context, name string) ([]
 	}
 	return items, nil
 }
-
-const getLastAddressId = `-- name: GetLastAddressId :one
-SELECT COALESCE (
-  (SELECT addresses.id
-  FROM addresses
-  ORDER BY created_at DESC
-  LIMIT 1),
-  ''
-)
-`
-
-func (q *Queries) GetLastAddressId(ctx context.Context) (interface{}, error) {
-	row := q.db.QueryRowContext(ctx, getLastAddressId)
-	var coalesce interface{}
-	err := row.Scan(&coalesce)
-	return coalesce, err
-}

@@ -1,7 +1,7 @@
 -- Delete duplicate address records
 DELETE FROM addresses
 WHERE id NOT IN (
-  SELECT MIN(id)
+  SELECT MAX(id)
   FROM addresses
   GROUP BY unit_number,
            house_number,

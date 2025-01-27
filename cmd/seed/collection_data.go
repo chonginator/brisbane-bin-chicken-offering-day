@@ -139,20 +139,7 @@ func seedCollectionData(db *sql.DB, filepath string) error {
 	// 	return err
 	// }
 
-	lastID, err := dbQueries.GetLastAddressId(context.Background())
-	if err != nil {
-		return fmt.Errorf("error getting last address ID: %w", err)
-	}
-
-	startIndex := 0
-	for i, address := range addresses {
-		if address.ID == lastID {
-			startIndex = i
-			break
-		}
-	}
-
-	err = seedAddresses(db, addresses[startIndex:])
+	err = seedAddresses(db, addresses)
 	if err != nil {
 		return err
 	}

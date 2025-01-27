@@ -31,12 +31,3 @@ FROM addresses
 INNER JOIN streets
 ON addresses.street_id = street.id
 WHERE streets.name = :name;
-
--- name: GetLastAddressId :one
-SELECT COALESCE (
-  (SELECT addresses.id
-  FROM addresses
-  ORDER BY created_at DESC
-  LIMIT 1),
-  ''
-);
