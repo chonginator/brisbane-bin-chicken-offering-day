@@ -84,8 +84,8 @@ func seedCollectionData(db *sql.DB, filepath string) error {
 		streetKey := titleCasedStreetName + ":" + titleCasedSuburb
 
 		streetMap[streetKey] = Street{
-			ID: street.ID,
-			Name: titleCasedStreetName,
+			ID:       street.ID,
+			Name:     titleCasedStreetName,
 			SuburbID: street.ID_2,
 		}
 	}
@@ -139,7 +139,13 @@ func seedCollectionData(db *sql.DB, filepath string) error {
 	// 	return err
 	// }
 
-	err = seedAddresses(db, addresses)
+	seedProgress, err := dbQueries.GetSeedProgress(context.Background())
+	if err != nil {
+		return fmt.Errorf("error getting seed progress from database: %w", err)
+	}
+
+	startIndex := seedProgress.LastProcessedIndex + 1
+	err = seedAddresses(db, addresses[startIndex:])
 	if err != nil {
 		return err
 	}
@@ -181,7 +187,6 @@ func seedStreets(db *sql.DB, streets []Street) error {
 }
 
 func seedAddresses(db *sql.DB, addresses []Address) error {
-	
 	startTime := time.Now()
 	err := processBatch(addresses, defaultBatchSize, func(batch []Address) error {
 		tx, err := db.Begin()
@@ -191,6 +196,11 @@ func seedAddresses(db *sql.DB, addresses []Address) error {
 		defer tx.Rollback()
 
 		qtx := database.New(tx)
+
+		seedProgress, err := qtx.GetSeedProgress(context.Background())
+		if err != nil {
+			return fmt.Errorf("error getting seed progress from database: %w", err)
+		}
 
 		for _, address := range batch {
 			var houseNumberSuffix sql.NullString
@@ -223,6 +233,14 @@ func seedAddresses(db *sql.DB, addresses []Address) error {
 				log.Printf("Failed on propertyID: %s, street: %s", address.PropertyID, address.StreetID)
 				return fmt.Errorf("error creating address: %w", err)
 			}
+		}
+
+		err = qtx.UpdateSeedProgress(context.Background(), database.UpdateSeedProgressParams{
+			LastProcessedIndex: seedProgress.LastProcessedIndex + 1,
+			ID:                 seedProgress.ID,
+		})
+		if err != nil {
+			return fmt.Errorf("error updating seed progress: %w", err)
 		}
 
 		return tx.Commit()

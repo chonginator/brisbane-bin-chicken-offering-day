@@ -68,7 +68,7 @@ func toAddressString(unitNumber, houseNumber, houseNumberSuffix, streetName stri
 
 	writes := []struct {
 		condition bool
-		val string
+		val       string
 	}{
 		{unitNumber != "", unitNumber},
 		{true, houseNumber},
