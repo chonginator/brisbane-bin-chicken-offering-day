@@ -25,6 +25,10 @@ VALUES (
 )
 RETURNING *;
 
+-- name: GetAddresses :many
+SELECT *
+FROM addresses;
+
 -- name: GetAddressesByStreetName :many
 SELECT addresses.*
 FROM addresses
