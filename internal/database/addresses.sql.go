@@ -78,13 +78,20 @@ func (q *Queries) CreateAddress(ctx context.Context, arg CreateAddressParams) (A
 	return i, err
 }
 
-const getAddresses = `-- name: GetAddresses :many
+const getAddressBatch = `-- name: GetAddressBatch :many
 SELECT id, created_at, updated_at, property_id, unit_number, house_number, house_number_suffix, street_id, collection_day, zone
 FROM addresses
+LIMIT ?2
+OFFSET ?1
 `
 
-func (q *Queries) GetAddresses(ctx context.Context) ([]Address, error) {
-	rows, err := q.db.QueryContext(ctx, getAddresses)
+type GetAddressBatchParams struct {
+	Offset    int64
+	BatchSize int64
+}
+
+func (q *Queries) GetAddressBatch(ctx context.Context, arg GetAddressBatchParams) ([]Address, error) {
+	rows, err := q.db.QueryContext(ctx, getAddressBatch, arg.Offset, arg.BatchSize)
 	if err != nil {
 		return nil, err
 	}

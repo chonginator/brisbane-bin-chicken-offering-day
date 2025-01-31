@@ -25,13 +25,15 @@ VALUES (
 )
 RETURNING *;
 
--- name: GetAddresses :many
-SELECT *
-FROM addresses;
-
 -- name: GetAddressesByStreetName :many
 SELECT addresses.*
 FROM addresses
 INNER JOIN streets
 ON addresses.street_id = street.id
 WHERE streets.name = :name;
+
+-- name: GetAddressBatch :many
+SELECT *
+FROM addresses
+LIMIT :batch_size
+OFFSET :offset;
