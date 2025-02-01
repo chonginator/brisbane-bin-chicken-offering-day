@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/chonginator/brisbane-bin-chicken-offering-day/internal/database"
@@ -64,7 +65,7 @@ func seedCollectionData(db *sql.DB, filepath string) error {
 	suburbMap := make(map[string]uuid.UUID)
 	dbSuburbs, err := dbQueries.GetSuburbs(context.Background())
 	if err != nil {
-		return fmt.Errorf("error getting suburbs: %w", err)
+		return fmt.Errorf("error getting suburbs from database: %w", err)
 	}
 	for _, suburb := range dbSuburbs {
 		suburbMap[suburb.Name] = suburb.ID
@@ -75,7 +76,7 @@ func seedCollectionData(db *sql.DB, filepath string) error {
 	streetMap := make(map[string]Street)
 	dbStreets, err := dbQueries.GetStreetsWithSuburb(context.Background())
 	if err != nil {
-		return fmt.Errorf("error getting streets: %w", err)
+		return fmt.Errorf("error getting streets from database: %w", err)
 	}
 	for _, street := range dbStreets {
 		titleCasedStreetName := caser.String(street.StreetName)
@@ -90,8 +91,24 @@ func seedCollectionData(db *sql.DB, filepath string) error {
 		}
 	}
 
+	streets := make([]Street, 0, len(streetMap))
+	for _, street := range streetMap {
+		streets = append(streets, street)
+	}
+
+	// err = seedStreets(db, streets)
+	// if err != nil {
+	// 	return err
+	// }
+
+	addressMap, err := loadAddressesInBatches(dbQueries, defaultBatchSize)
+	if err != nil {
+		return fmt.Errorf("couldn't load address map: %w", err)
+	}
+
 	var addresses []Address
 
+	log.Printf("Processing %d collection records", len(collectionRecords))
 	for _, record := range collectionRecords {
 		titleCasedStreetName := caser.String(record.StreetName)
 		titleCasedSuburb := caser.String(record.Suburb)
@@ -125,27 +142,26 @@ func seedCollectionData(db *sql.DB, filepath string) error {
 			CollectionDay:     caser.String(record.CollectionDay),
 			Zone:              caser.String(record.Zone),
 		}
+		addressKey, err := fromAddressToKey(address)
+		if err != nil {
+			return err
+		}
 
-		addresses = append(addresses, address)
+		log.Printf("Collection address: PropertyID=%s, Unit=%v, House=%s, Suffix=%v, Street=%s", 
+    record.PropertyID, record.UnitNumber, record.HouseNumber, 
+    record.HouseNumberSuffix, streetID)
+		log.Printf("Generated key: %s", addressKey)
+
+		if _, ok := addressMap[addressKey]; !ok {
+			addresses = append(addresses, address)
+		} else {
+			log.Printf("Skipping existing address with key: %s", addressKey)
+		}
 	}
 
-	streets := make([]Street, 0, len(streetMap))
-	for _, street := range streetMap {
-		streets = append(streets, street)
-	}
+	log.Printf("Found %d new addresses to seed", len(addresses))
 
-	// err = seedStreets(db, streets)
-	// if err != nil {
-	// 	return err
-	// }
-
-	seedProgress, err := dbQueries.GetSeedProgress(context.Background())
-	if err != nil {
-		return fmt.Errorf("error getting seed progress from database: %w", err)
-	}
-
-	startIndex := seedProgress.LastProcessedIndex + 1
-	err = seedAddresses(db, addresses[startIndex:])
+	err = seedAddresses(db, addresses)
 	if err != nil {
 		return err
 	}
@@ -197,11 +213,6 @@ func seedAddresses(db *sql.DB, addresses []Address) error {
 
 		qtx := database.New(tx)
 
-		seedProgress, err := qtx.GetSeedProgress(context.Background())
-		if err != nil {
-			return fmt.Errorf("error getting seed progress from database: %w", err)
-		}
-
 		for _, address := range batch {
 			var houseNumberSuffix sql.NullString
 			if address.HouseNumberSuffix != nil {
@@ -219,6 +230,7 @@ func seedAddresses(db *sql.DB, addresses []Address) error {
 				}
 			}
 
+			log.Printf("Current address to insert: %+v", address)
 			_, err := qtx.CreateAddress(context.Background(), database.CreateAddressParams{
 				ID:                address.ID,
 				PropertyID:        address.PropertyID,
@@ -233,14 +245,6 @@ func seedAddresses(db *sql.DB, addresses []Address) error {
 				log.Printf("Failed on propertyID: %s, street: %s", address.PropertyID, address.StreetID)
 				return fmt.Errorf("error creating address: %w", err)
 			}
-		}
-
-		err = qtx.UpdateSeedProgress(context.Background(), database.UpdateSeedProgressParams{
-			LastProcessedIndex: seedProgress.LastProcessedIndex + 1,
-			ID:                 seedProgress.ID,
-		})
-		if err != nil {
-			return fmt.Errorf("error updating seed progress: %w", err)
 		}
 
 		return tx.Commit()
@@ -275,4 +279,107 @@ func processBatch[T any](items []T, batchSize int, process func([]T) error) erro
 		log.Printf("Batch completed: %.2f%% (%d/%d items processed). Batch took: %v", percentComplete, end, len(items), batchDuration)
 	}
 	return nil
+}
+
+func loadAddressesInBatches(dbQueries *database.Queries, batchSize int) (map[string]Address, error) {
+	addressMap := make(map[string]Address)
+	offset := 0
+
+	for {
+		dbAddresses, err := dbQueries.GetAddressBatch(context.Background(), database.GetAddressBatchParams{
+			BatchSize: int64(batchSize),
+			Offset: int64(offset),
+		})
+		if err != nil {
+			return nil, fmt.Errorf("couldn't get address batch from database: %w", err)
+		}
+
+		if len(dbAddresses) == 0 {
+			break
+		}
+
+		for _, dbAddress := range dbAddresses {
+			var unitNumber, houseNumberSuffix *string
+			if dbAddress.UnitNumber.Valid {
+				value := dbAddress.UnitNumber.String
+				unitNumber = &value
+			}
+			if dbAddress.HouseNumberSuffix.Valid {
+				value := dbAddress.HouseNumberSuffix.String
+				houseNumberSuffix = &value
+			}
+		
+			address := Address{
+				ID: dbAddress.ID,
+				PropertyID: dbAddress.PropertyID,
+				UnitNumber: unitNumber,
+				HouseNumber: dbAddress.HouseNumber,
+				HouseNumberSuffix: houseNumberSuffix,
+				StreetID: dbAddress.StreetID,
+				CollectionDay: dbAddress.CollectionDay,
+				Zone: dbAddress.Zone,
+			}
+		
+			key, err := fromAddressToKey(address)
+			if err != nil {
+				return nil, fmt.Errorf("error generating address key: %w", err)
+			}
+
+			// log.Printf("Database address: PropertyID=%s, Unit=%v, House=%s, Suffix=%v, Street=%s", 
+			// dbAddress.PropertyID, dbAddress.UnitNumber, dbAddress.HouseNumber, 
+			// dbAddress.HouseNumberSuffix, dbAddress.StreetID)
+			// log.Printf("Generated key: %s", key)
+
+			addressMap[key] = address
+		}
+
+		offset += batchSize
+	}
+
+	log.Printf("Loaded %d existing addresses from database", len(addressMap))
+	return addressMap, nil
+}
+
+func fromAddressToKey(address Address) (string, error) {
+	var b strings.Builder
+
+	unitNumber, houseNumberSuffix := "", ""
+	if address.UnitNumber != nil {
+		unitNumber = *address.UnitNumber
+	}
+	if address.HouseNumberSuffix != nil {
+		houseNumberSuffix = *address.HouseNumberSuffix
+	}
+
+	writes := []struct {
+		condition bool
+		str				string
+	}{
+		{true, address.PropertyID},
+		{address.UnitNumber != nil, unitNumber},
+		{true, address.HouseNumber},
+		{address.HouseNumberSuffix != nil, houseNumberSuffix},
+		{true, address.StreetID.String()},
+		{true, address.CollectionDay},
+		{true, address.Zone},
+	}
+	sep := '_'
+
+	for i, w := range writes {
+		if w.condition {
+			_, err := b.WriteString(w.str)
+			if err != nil {
+				return "", fmt.Errorf("failed to write string %s to address key: %w", w.str, err)
+			}
+
+			if i != len(writes) - 1 {
+				_, err := b.WriteRune(sep)
+				if err != nil {
+					return "", fmt.Errorf("failed to write separator %s to address key: %w", sep, err) 
+				}
+			}
+		}
+	}
+
+	return b.String(), nil
 }
