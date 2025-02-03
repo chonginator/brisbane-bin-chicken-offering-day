@@ -62,33 +62,14 @@ func seedCollectionData(db *sql.DB, filepath string) error {
 
 	dbQueries := database.New(db)
 
-	suburbMap := make(map[string]uuid.UUID)
-	dbSuburbs, err := dbQueries.GetSuburbs(context.Background())
+	suburbMap, err := createSuburbMap(dbQueries)
 	if err != nil {
-		return fmt.Errorf("error getting suburbs from database: %w", err)
-	}
-	for _, suburb := range dbSuburbs {
-		suburbMap[suburb.Name] = suburb.ID
+		return fmt.Errorf("error creating suburb map: %w", err)
 	}
 
-	caser := cases.Title(language.English)
-
-	streetMap := make(map[string]Street)
-	dbStreets, err := dbQueries.GetStreetsWithSuburb(context.Background())
+	streetMap, err := createStreetMap(dbQueries)
 	if err != nil {
-		return fmt.Errorf("error getting streets from database: %w", err)
-	}
-	for _, street := range dbStreets {
-		titleCasedStreetName := caser.String(street.StreetName)
-		titleCasedSuburb := caser.String(street.SuburbName)
-
-		streetKey := titleCasedStreetName + ":" + titleCasedSuburb
-
-		streetMap[streetKey] = Street{
-			ID:       street.ID,
-			Name:     titleCasedStreetName,
-			SuburbID: street.ID_2,
-		}
+		return fmt.Errorf("error creating street map: %w", err)
 	}
 
 	streets := make([]Street, 0, len(streetMap))
@@ -96,67 +77,21 @@ func seedCollectionData(db *sql.DB, filepath string) error {
 		streets = append(streets, street)
 	}
 
-	// err = seedStreets(db, streets)
-	// if err != nil {
-	// 	return err
-	// }
-
-	addressMap, err := loadAddressesInBatches(dbQueries, defaultBatchSize)
+	err = seedStreets(db, streets)
 	if err != nil {
-		return fmt.Errorf("couldn't load address map: %w", err)
+		return err
 	}
 
-	var addresses []Address
+	addressMap, err := createAddressMap(dbQueries)
+	if err != nil {
+		return fmt.Errorf("error creating address map: %w", err)
+	}
 
 	log.Printf("Processing %d collection records", len(collectionRecords))
-	for _, record := range collectionRecords {
-		titleCasedStreetName := caser.String(record.StreetName)
-		titleCasedSuburb := caser.String(record.Suburb)
 
-		streetKey := titleCasedStreetName + ":" + titleCasedSuburb
-
-		suburbID, ok := suburbMap[titleCasedSuburb]
-		if !ok {
-			return fmt.Errorf("suburb not found: %s", titleCasedSuburb)
-		}
-
-		var streetID uuid.UUID
-		if street, ok := streetMap[streetKey]; ok {
-			streetID = street.ID
-		} else {
-			streetID = uuid.New()
-			streetMap[streetKey] = Street{
-				ID:       streetID,
-				Name:     titleCasedStreetName,
-				SuburbID: suburbID,
-			}
-		}
-
-		address := Address{
-			ID:                uuid.New(),
-			PropertyID:        record.PropertyID,
-			UnitNumber:        record.UnitNumber,
-			HouseNumber:       record.HouseNumber,
-			HouseNumberSuffix: record.HouseNumberSuffix,
-			StreetID:          streetID,
-			CollectionDay:     caser.String(record.CollectionDay),
-			Zone:              caser.String(record.Zone),
-		}
-		addressKey, err := fromAddressToKey(address)
-		if err != nil {
-			return err
-		}
-
-		log.Printf("Collection address: PropertyID=%s, Unit=%v, House=%s, Suffix=%v, Street=%s", 
-    record.PropertyID, record.UnitNumber, record.HouseNumber, 
-    record.HouseNumberSuffix, streetID)
-		log.Printf("Generated key: %s", addressKey)
-
-		if _, ok := addressMap[addressKey]; !ok {
-			addresses = append(addresses, address)
-		} else {
-			log.Printf("Skipping existing address with key: %s", addressKey)
-		}
+	addresses, err := createAddressesFromCollectionData(collectionRecords, suburbMap, streetMap, addressMap)
+	if err != nil {
+		return fmt.Errorf("error creating addresses from collection data: %w", err)
 	}
 
 	log.Printf("Found %d new addresses to seed", len(addresses))
@@ -281,14 +216,51 @@ func processBatch[T any](items []T, batchSize int, process func([]T) error) erro
 	return nil
 }
 
-func loadAddressesInBatches(dbQueries *database.Queries, batchSize int) (map[string]Address, error) {
+func createSuburbMap(dbQueries *database.Queries) (map[string]uuid.UUID, error) {
+	suburbMap := make(map[string]uuid.UUID)
+	dbSuburbs, err := dbQueries.GetSuburbs(context.Background())
+	if err != nil {
+		return nil, fmt.Errorf("error getting suburbs from database: %w", err)
+	}
+	for _, suburb := range dbSuburbs {
+		suburbMap[suburb.Name] = suburb.ID
+	}
+	return suburbMap, nil
+}
+
+func createStreetMap(dbQueries *database.Queries) (map[string]Street, error) {
+	caser := cases.Title(language.English)
+
+	streetMap := make(map[string]Street)
+	dbStreets, err := dbQueries.GetStreetsWithSuburb(context.Background())
+	if err != nil {
+		return nil, fmt.Errorf("error getting streets from database: %w", err)
+	}
+
+	for _, street := range dbStreets {
+		titleCasedStreetName := caser.String(street.StreetName)
+		titleCasedSuburb := caser.String(street.SuburbName)
+
+		streetKey := titleCasedStreetName + ":" + titleCasedSuburb
+
+		streetMap[streetKey] = Street{
+			ID:       street.ID,
+			Name:     titleCasedStreetName,
+			SuburbID: street.ID_2,
+		}
+	}
+
+	return streetMap, nil
+}
+
+func createAddressMap(dbQueries *database.Queries) (map[string]Address, error) {
 	addressMap := make(map[string]Address)
 	offset := 0
 
 	for {
 		dbAddresses, err := dbQueries.GetAddressBatch(context.Background(), database.GetAddressBatchParams{
-			BatchSize: int64(batchSize),
-			Offset: int64(offset),
+			BatchSize: int64(defaultBatchSize),
+			Offset:    int64(offset),
 		})
 		if err != nil {
 			return nil, fmt.Errorf("couldn't get address batch from database: %w", err)
@@ -301,39 +273,34 @@ func loadAddressesInBatches(dbQueries *database.Queries, batchSize int) (map[str
 		for _, dbAddress := range dbAddresses {
 			var unitNumber, houseNumberSuffix *string
 			if dbAddress.UnitNumber.Valid {
-				value := dbAddress.UnitNumber.String
-				unitNumber = &value
+				val := dbAddress.UnitNumber.String
+				unitNumber = &val
 			}
 			if dbAddress.HouseNumberSuffix.Valid {
-				value := dbAddress.HouseNumberSuffix.String
-				houseNumberSuffix = &value
+				val := dbAddress.HouseNumberSuffix.String
+				houseNumberSuffix = &val
 			}
-		
+
 			address := Address{
-				ID: dbAddress.ID,
-				PropertyID: dbAddress.PropertyID,
-				UnitNumber: unitNumber,
-				HouseNumber: dbAddress.HouseNumber,
+				ID:                dbAddress.ID,
+				PropertyID:        dbAddress.PropertyID,
+				UnitNumber:        unitNumber,
+				HouseNumber:       dbAddress.HouseNumber,
 				HouseNumberSuffix: houseNumberSuffix,
-				StreetID: dbAddress.StreetID,
-				CollectionDay: dbAddress.CollectionDay,
-				Zone: dbAddress.Zone,
+				StreetID:          dbAddress.StreetID,
+				CollectionDay:     dbAddress.CollectionDay,
+				Zone:              dbAddress.Zone,
 			}
-		
+
 			key, err := fromAddressToKey(address)
 			if err != nil {
 				return nil, fmt.Errorf("error generating address key: %w", err)
 			}
 
-			// log.Printf("Database address: PropertyID=%s, Unit=%v, House=%s, Suffix=%v, Street=%s", 
-			// dbAddress.PropertyID, dbAddress.UnitNumber, dbAddress.HouseNumber, 
-			// dbAddress.HouseNumberSuffix, dbAddress.StreetID)
-			// log.Printf("Generated key: %s", key)
-
 			addressMap[key] = address
 		}
 
-		offset += batchSize
+		offset += defaultBatchSize
 	}
 
 	log.Printf("Loaded %d existing addresses from database", len(addressMap))
@@ -353,7 +320,7 @@ func fromAddressToKey(address Address) (string, error) {
 
 	writes := []struct {
 		condition bool
-		str				string
+		str       string
 	}{
 		{true, address.PropertyID},
 		{address.UnitNumber != nil, unitNumber},
@@ -372,14 +339,71 @@ func fromAddressToKey(address Address) (string, error) {
 				return "", fmt.Errorf("failed to write string %s to address key: %w", w.str, err)
 			}
 
-			if i != len(writes) - 1 {
+			if i != len(writes)-1 {
 				_, err := b.WriteRune(sep)
 				if err != nil {
-					return "", fmt.Errorf("failed to write separator %s to address key: %w", sep, err) 
+					return "", fmt.Errorf("failed to write separator %v to address key: %w", sep, err)
 				}
 			}
 		}
 	}
 
 	return b.String(), nil
+}
+
+func createAddressesFromCollectionData(
+	collectionRecords []CollectionRecord,
+	suburbMap map[string]uuid.UUID,
+	streetMap map[string]Street,
+	addressMap map[string]Address,
+) ([]Address, error) {
+	var addresses []Address
+	caser := cases.Title(language.English)
+
+	for _, record := range collectionRecords {
+		titleCasedStreetName := caser.String(record.StreetName)
+		titleCasedSuburb := caser.String(record.Suburb)
+
+		suburbID, ok := suburbMap[titleCasedSuburb]
+		if !ok {
+			return nil, fmt.Errorf("suburb not found: %s", titleCasedSuburb)
+		}
+
+		var streetID uuid.UUID
+		streetKey := titleCasedStreetName + ":" + titleCasedSuburb
+
+		if street, ok := streetMap[streetKey]; ok {
+			streetID = street.ID
+		} else {
+			streetID = uuid.New()
+			streetMap[streetKey] = Street{
+				ID:       streetID,
+				Name:     titleCasedStreetName,
+				SuburbID: suburbID,
+			}
+		}
+
+		address := Address{
+			ID:                uuid.New(),
+			PropertyID:        record.PropertyID,
+			UnitNumber:        record.UnitNumber,
+			HouseNumber:       record.HouseNumber,
+			HouseNumberSuffix: record.HouseNumberSuffix,
+			StreetID:          streetID,
+			CollectionDay:     caser.String(record.CollectionDay),
+			Zone:              caser.String(record.Zone),
+		}
+		addressKey, err := fromAddressToKey(address)
+		if err != nil {
+			return nil, err
+		}
+
+		if _, ok := addressMap[addressKey]; !ok {
+			addresses = append(addresses, address)
+		} else {
+			log.Printf("Skipping existing address with key: %s", addressKey)
+		}
+	}
+
+	return addresses, nil
 }
