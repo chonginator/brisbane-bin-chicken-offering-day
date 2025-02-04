@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 
@@ -68,4 +69,16 @@ func seedSuburbs(db *database.Queries, suburbNames []string) error {
 	}
 
 	return nil
+}
+
+func createSuburbMap(dbQueries *database.Queries) (map[string]uuid.UUID, error) {
+	suburbMap := make(map[string]uuid.UUID)
+	dbSuburbs, err := dbQueries.GetSuburbs(context.Background())
+	if err != nil {
+		return nil, fmt.Errorf("error getting suburbs from database: %w", err)
+	}
+	for _, suburb := range dbSuburbs {
+		suburbMap[suburb.Name] = suburb.ID
+	}
+	return suburbMap, nil
 }
