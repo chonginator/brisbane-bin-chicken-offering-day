@@ -24,13 +24,6 @@ type Address struct {
 	Zone              string
 }
 
-type SeedProgress struct {
-	ID                 uuid.UUID
-	CreatedAt          time.Time
-	UpdatedAt          time.Time
-	LastProcessedIndex int64
-}
-
 type Street struct {
 	ID        uuid.UUID
 	CreatedAt time.Time

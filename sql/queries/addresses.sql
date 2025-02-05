@@ -29,7 +29,7 @@ RETURNING *;
 SELECT addresses.*
 FROM addresses
 INNER JOIN streets
-ON addresses.street_id = street.id
+ON addresses.street_id = streets.id
 WHERE streets.name = :name;
 
 -- name: GetAddressBatch :many

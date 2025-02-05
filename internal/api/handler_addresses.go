@@ -21,7 +21,7 @@ type AddressesPageData struct {
 func (cfg *Config) HandlerAddresses(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 
-	streetSlug := vars["address"]
+	streetSlug := vars["street"]
 	streetName := fromSlug(streetSlug)
 
 	dbAddresses, err := cfg.db.GetAddressesByStreetName(context.Background(), streetName)
