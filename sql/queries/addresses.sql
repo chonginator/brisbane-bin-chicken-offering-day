@@ -32,6 +32,11 @@ INNER JOIN streets
 ON addresses.street_id = streets.id
 WHERE streets.name = :name;
 
+-- name: GetCollectionSchedulesByPropertyID :many
+SELECT collection_day, zone
+FROM addresses
+WHERE property_id = :property_id;
+
 -- name: GetAddressBatch :many
 SELECT *
 FROM addresses
