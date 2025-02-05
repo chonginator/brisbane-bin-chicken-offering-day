@@ -74,7 +74,7 @@ func toAddressString(unitNumber, houseNumber, houseNumberSuffix, streetName stri
 		condition bool
 		val       string
 	}{
-		{unitNumber != "", unitNumber},
+		{unitNumber != "", unitNumber + "/"},
 		{true, houseNumber},
 		{houseNumberSuffix != "", houseNumberSuffix},
 		{true, " " + streetName},
