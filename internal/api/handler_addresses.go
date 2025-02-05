@@ -21,13 +21,17 @@ type AddressesPageData struct {
 func (cfg *Config) HandlerAddresses(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 
-	streetSlug := vars["street"]
+	streetSlug, ok := vars["street"]
+	if !ok {
+		err := fmt.Errorf("street parameter is required")
+		respondWithError(w, http.StatusInternalServerError, err.Error(), err)
+	}
 	streetName := fromSlug(streetSlug)
 
 	dbAddresses, err := cfg.db.GetAddressesByStreetName(context.Background(), streetName)
 	if err != nil {
 		err = fmt.Errorf("couldn't find addresses for %s: %w", streetName, err)
-		respondWithError(w, http.StatusInternalServerError, err.Error(), err)
+		respondWithError(w, http.StatusInternalServerError, "failed to fetch addresses", err)
 		return
 	}
 
