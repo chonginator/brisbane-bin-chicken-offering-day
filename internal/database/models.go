@@ -24,6 +24,14 @@ type Address struct {
 	Zone              string
 }
 
+type BinCollectionWeek struct {
+	ID            uuid.UUID
+	CreatedAt     time.Time
+	UpdatedAt     time.Time
+	WeekStartDate string
+	Zone          string
+}
+
 type Street struct {
 	ID        uuid.UUID
 	CreatedAt time.Time

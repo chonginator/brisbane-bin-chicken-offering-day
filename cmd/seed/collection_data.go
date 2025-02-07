@@ -43,14 +43,14 @@ type Address struct {
 }
 
 func seedCollectionData(db *sql.DB, filepath string) error {
-	collectionData, err := os.Open(filepath)
+	data, err := os.Open(filepath)
 	if err != nil {
 		return err
 	}
-	defer collectionData.Close()
+	defer data.Close()
 
 	collectionRecords := []CollectionRecord{}
-	decoder := json.NewDecoder(collectionData)
+	decoder := json.NewDecoder(data)
 	err = decoder.Decode(&collectionRecords)
 	if err != nil {
 		return err
