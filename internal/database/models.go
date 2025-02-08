@@ -28,7 +28,7 @@ type BinCollectionWeek struct {
 	ID            uuid.UUID
 	CreatedAt     time.Time
 	UpdatedAt     time.Time
-	WeekStartDate string
+	WeekStartDate time.Time
 	Zone          string
 }
 
