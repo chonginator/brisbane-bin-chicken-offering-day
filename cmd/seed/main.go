@@ -22,12 +22,6 @@ func main() {
 		dataDir = "data"
 	}
 
-	suburbsPath := filepath.Join(dataDir, "suburbs-and-adjoining-suburbs.json")
-	suburbs, err := loadAndProcessSuburbs(suburbsPath)
-	if err != nil {
-		log.Fatalf("Error loading suburbs data: %v", err)
-	}
-
 	dbURL := os.Getenv("DATABASE_URL")
 	if dbURL == "" {
 		log.Fatalf("DATABASE_URL environment variable is not set")
@@ -40,9 +34,10 @@ func main() {
 	defer db.Close()
 	dbQueries := database.New(db)
 
-	err = seedSuburbs(dbQueries, suburbs)
+	suburbsDataPath := filepath.Join(dataDir, "suburbs-and-adjoining-suburbs.json")
+	err = seedSuburbs(dbQueries, suburbsDataPath)
 	if err != nil {
-		log.Fatalf("Error seeding suburbs: %v", err)
+		log.Fatalf("Error seeding suburbs data: %v", err)
 	}
 
 	binCollectionWeeksDataPath := filepath.Join(dataDir, "waste-collection-days-collection-weeks.json")

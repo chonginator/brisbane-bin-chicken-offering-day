@@ -15,56 +15,51 @@ import (
 )
 
 type Suburb struct {
-	SuburbName string `json:"suburb_name"`
+	Name string `json:"suburb_name"`
 }
 
-func loadAndProcessSuburbs(filename string) ([]string, error) {
-	dir, err := os.Getwd()
-	if err != nil {
-		return nil, err
-	}
-
-	suburbsDataFullFilePath := filepath.Join(dir, filename)
-	suburbsDataFile, err := os.ReadFile(suburbsDataFullFilePath)
-	if err != nil {
-		return nil, err
-	}
-
-	suburbsData := []Suburb{}
-	err = json.Unmarshal(suburbsDataFile, &suburbsData)
-	if err != nil {
-		return nil, err
-	}
-
-	suburbsSet := make(map[string]struct{})
-
-	for _, suburb := range suburbsData {
-		suburbsSet[suburb.SuburbName] = struct{}{}
-	}
-
-	suburbs := []string{}
-
-	for suburbName := range suburbsSet {
-		caser := cases.Title(language.English)
-		suburbs = append(suburbs, caser.String(suburbName))
-	}
-
-	return suburbs, nil
-}
-
-func seedSuburbs(db *database.Queries, suburbNames []string) error {
-	if db == nil {
+func seedSuburbs(dbQueries *database.Queries, filepath string) error {
+	if dbQueries == nil {
 		return errors.New("database connection is nil")
 	}
 
-	for _, suburbName := range suburbNames {
-		_, err := db.CreateSuburb(context.Background(), database.CreateSuburbParams{
+	suburbsDataFile, err := os.Open(filepath)
+	if err != nil {
+		return err
+	}
+	defer suburbsDataFile.Close()
+
+	suburbsData := []Suburb{}
+	decoder := json.NewDecoder(suburbsDataFile)
+	err = decoder.Decode(&suburbsData)
+	if err != nil {
+		return err
+	}
+
+	suburbsSet := make(map[string]bool, len(suburbsData))
+	for _, suburb := range suburbsData {
+		suburbsSet[suburb.Name] = true
+	}
+
+	suburbMap, err := createSuburbMap(dbQueries)
+	if err != nil {
+		return fmt.Errorf("failed to create suburb map: %w", err)
+	}
+
+	caser := cases.Title(language.English)
+	for name := range suburbsSet {
+		titleCasedName := caser.String(name)
+		if _, ok := suburbMap[titleCasedName]; ok {
+			continue
+		}
+
+		_, err := dbQueries.CreateSuburb(context.Background(), database.CreateSuburbParams{
 			ID:   uuid.New(),
-			Name: suburbName,
+			Name: titleCasedName,
 		})
 
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to create suburb %s: %w", titleCasedName, err)
 		}
 	}
 
