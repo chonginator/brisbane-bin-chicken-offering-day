@@ -43,6 +43,7 @@ func seedAddresses(db *sql.DB, addresses []Address) error {
 			}
 
 			log.Printf("Current address to insert: %+v", address)
+
 			_, err := qtx.CreateAddress(context.Background(), database.CreateAddressParams{
 				ID:                address.ID,
 				PropertyID:        address.PropertyID,
