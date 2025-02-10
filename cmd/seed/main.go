@@ -46,9 +46,9 @@ func main() {
 		log.Fatalf("Error seeding bin collection weeks data: %v", err)
 	}
 
-	collectionsPath := filepath.Join(dataDir, "waste-collection-days-collection-days.json")
-	err = seedCollectionData(db, collectionsPath)
+	collectionsDataPath := filepath.Join(dataDir, "waste-collection-days-collection-days.json")
+	err = seedCollectionData(db, collectionsDataPath)
 	if err != nil {
-		log.Fatalf("Error loading collections data: %v", err)
+		log.Fatalf("Error seeding collections data: %v", err)
 	}
 }

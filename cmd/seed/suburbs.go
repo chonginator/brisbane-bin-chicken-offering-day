@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"path/filepath"
 
 	"github.com/chonginator/brisbane-bin-chicken-offering-day/internal/database"
 	"github.com/google/uuid"
