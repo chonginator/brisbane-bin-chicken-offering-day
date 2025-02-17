@@ -38,7 +38,7 @@ func seedBinCollectionWeeks(dbQueries *database.Queries, filepath string) error 
 
 		_, err = dbQueries.CreateBinCollectionWeek(context.Background(), database.CreateBinCollectionWeekParams{
 			ID:            uuid.New(),
-			WeekStartDate: weekStarting,
+			WeekStartDate: weekStarting.String(),
 			Zone:          record.Zone,
 		})
 

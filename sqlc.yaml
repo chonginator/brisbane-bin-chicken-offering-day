@@ -11,3 +11,5 @@ sql:
             go_type:
               import: "github.com/google/uuid"
               type: "UUID"
+          - db_type: "DATE"
+            go_type: "string"

@@ -14,3 +14,10 @@ VALUES (
   :zone
 )
 RETURNING *;
+
+-- name: GetZoneForCurrentWeek :one
+SELECT zone, week_start_date
+FROM bin_collection_weeks
+WHERE week_start_date <= DATE('now', 'utc')
+ORDER BY week_start_date DESC
+LIMIT 1;

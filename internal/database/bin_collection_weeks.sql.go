@@ -7,7 +7,6 @@ package database
 
 import (
 	"context"
-	"time"
 
 	"github.com/google/uuid"
 )
@@ -32,7 +31,7 @@ RETURNING id, created_at, updated_at, week_start_date, zone
 
 type CreateBinCollectionWeekParams struct {
 	ID            uuid.UUID
-	WeekStartDate time.Time
+	WeekStartDate string
 	Zone          string
 }
 
@@ -46,5 +45,25 @@ func (q *Queries) CreateBinCollectionWeek(ctx context.Context, arg CreateBinColl
 		&i.WeekStartDate,
 		&i.Zone,
 	)
+	return i, err
+}
+
+const getZoneForCurrentWeek = `-- name: GetZoneForCurrentWeek :one
+SELECT zone, week_start_date
+FROM bin_collection_weeks
+WHERE week_start_date <= DATE('now', 'utc')
+ORDER BY week_start_date DESC
+LIMIT 1
+`
+
+type GetZoneForCurrentWeekRow struct {
+	Zone          string
+	WeekStartDate string
+}
+
+func (q *Queries) GetZoneForCurrentWeek(ctx context.Context) (GetZoneForCurrentWeekRow, error) {
+	row := q.db.QueryRowContext(ctx, getZoneForCurrentWeek)
+	var i GetZoneForCurrentWeekRow
+	err := row.Scan(&i.Zone, &i.WeekStartDate)
 	return i, err
 }
