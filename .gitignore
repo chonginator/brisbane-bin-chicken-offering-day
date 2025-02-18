@@ -1,2 +1,4 @@
 brisbane-bin-chicken-day
 .env
+/data
+.DS_Store

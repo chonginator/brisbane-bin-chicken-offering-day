@@ -1,0 +1,9 @@
+{{ define "content" }}
+<h2>Collections</h2>
+<div>
+  {{ range .Collections }}
+  <p>{{ .Day }}</p>
+  <p>It's {{ .BinWeekType }} bin week!</p>
+  {{ end }}
+</div>
+{{ end }}

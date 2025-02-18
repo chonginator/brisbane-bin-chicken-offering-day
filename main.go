@@ -1,18 +1,44 @@
 package main
 
 import (
-	"html/template"
 	"log"
 	"net/http"
+	"os"
 	"time"
+
+	"github.com/chonginator/brisbane-bin-chicken-offering-day/internal/api"
+	"github.com/gorilla/mux"
+	"github.com/joho/godotenv"
+	_ "github.com/tursodatabase/libsql-client-go/libsql"
 )
 
 func main() {
-	const port = "8080"
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatalf("Error loading .env file: %v", err)
+	}
 
-	mux := http.NewServeMux()
-	mux.HandleFunc("/", handlerRoot)
-	mux.HandleFunc("/suburbs", handlerSuburbs)
+	port := os.Getenv("PORT")
+	if port == "" {
+		log.Fatalf("PORT environment variable is not set")
+	}
+
+	dbURL := os.Getenv("DATABASE_URL")
+	if dbURL == "" {
+		log.Fatalf("DATABASE_URL environment variable is not set")
+	}
+
+	apiCfg, err := api.NewAPIConfig(dbURL)
+	if err != nil {
+		log.Fatalf("Error initializing API config: %v", err)
+	}
+
+	mux := mux.NewRouter()
+	mux.HandleFunc("/", apiCfg.HandlerRoot)
+	mux.HandleFunc("/suburbs", apiCfg.HandlerSuburbs)
+	mux.HandleFunc("/suburbs/{suburb}/streets", apiCfg.HandlerStreets)
+	mux.HandleFunc("/suburbs/{suburb}/streets/{street}/addresses", apiCfg.HandlerAddresses)
+	mux.HandleFunc("/suburbs/{suburb}/streets/{street}/addresses/{property_id}/collections", apiCfg.HandlerCollections)
 
 	srv := &http.Server{
 		Addr:              ":" + port,
@@ -23,20 +49,4 @@ func main() {
 
 	log.Printf("Serving on port: %s\n", port)
 	log.Fatal(srv.ListenAndServe())
-}
-
-func handlerRoot(w http.ResponseWriter, r *http.Request) {
-	http.Redirect(w, r, "/suburbs", http.StatusMovedPermanently)
-}
-
-func handlerSuburbs(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "text/html")
-
-	tmpl, err := template.ParseFiles("templates/layout.html", "templates/index.html")
-	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "Couldn't load template", err)
-		return
-	}
-
-	respondWithHTML(w, http.StatusOK, tmpl, nil)
 }
