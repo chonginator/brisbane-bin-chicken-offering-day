@@ -9,7 +9,7 @@ import (
 )
 
 type Collection struct {
-	Day string
+	Day         string
 	BinWeekType BinWeekType
 }
 
@@ -21,7 +21,7 @@ type BinWeekType string
 
 const (
 	YellowRecycling BinWeekType = "Yellow Recycling"
-	GreenWaste BinWeekType = "Green Waste"
+	GreenWaste      BinWeekType = "Green Waste"
 )
 
 func (cfg *Config) HandlerCollections(w http.ResponseWriter, r *http.Request) {
@@ -55,7 +55,7 @@ func (cfg *Config) HandlerCollections(w http.ResponseWriter, r *http.Request) {
 	collections := make([]Collection, len(dbCollections))
 	for i, collection := range dbCollections {
 		collections[i] = Collection{
-			Day: collection.CollectionDay,
+			Day:         collection.CollectionDay,
 			BinWeekType: binWeekType,
 		}
 	}
