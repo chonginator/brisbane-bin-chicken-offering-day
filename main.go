@@ -13,14 +13,13 @@ import (
 )
 
 func main() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatalf("Error loading .env file: %v", err)
+	if err := godotenv.Load(); err != nil {
+		log.Printf("No .env file found: %v", err)
 	}
 
 	port := os.Getenv("PORT")
 	if port == "" {
-		log.Fatalf("PORT environment variable is not set")
+		port = "8080"
 	}
 
 	dbURL := os.Getenv("DATABASE_URL")

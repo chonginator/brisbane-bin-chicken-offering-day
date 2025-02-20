@@ -8,4 +8,6 @@ COPY templates templates
 
 COPY brisbane-bin-chicken-day .
 
+EXPOSE 8080
+
 CMD ["./brisbane-bin-chicken-day"]
