@@ -125,7 +125,7 @@ func (q *Queries) GetAddressBatch(ctx context.Context, arg GetAddressBatchParams
 }
 
 const getAddressesByStreetName = `-- name: GetAddressesByStreetName :many
-SELECT addresses.id, addresses.created_at, addresses.updated_at, addresses.property_id, addresses.unit_number, addresses.house_number, addresses.house_number_suffix, addresses.street_id, addresses.collection_day, addresses.zone
+SELECT DISTINCT addresses.id, addresses.created_at, addresses.updated_at, addresses.property_id, addresses.unit_number, addresses.house_number, addresses.house_number_suffix, addresses.street_id, addresses.collection_day, addresses.zone
 FROM addresses
 INNER JOIN streets
 ON addresses.street_id = streets.id

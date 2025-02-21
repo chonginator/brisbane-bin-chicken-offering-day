@@ -26,7 +26,7 @@ VALUES (
 RETURNING *;
 
 -- name: GetAddressesByStreetName :many
-SELECT addresses.*
+SELECT DISTINCT addresses.*
 FROM addresses
 INNER JOIN streets
 ON addresses.street_id = streets.id
