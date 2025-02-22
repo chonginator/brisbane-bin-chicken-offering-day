@@ -10,7 +10,7 @@ VALUES (
 RETURNING *;
 
 -- name: GetStreetsBySuburbName :many
-SELECT streets.*
+SELECT streets.name, streets.suburb_id
 FROM streets
 INNER JOIN suburbs
 ON streets.suburb_id = suburbs.id
