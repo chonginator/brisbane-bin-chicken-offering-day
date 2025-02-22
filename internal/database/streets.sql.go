@@ -44,29 +44,28 @@ func (q *Queries) CreateStreet(ctx context.Context, arg CreateStreetParams) (Str
 }
 
 const getStreetsBySuburbName = `-- name: GetStreetsBySuburbName :many
-SELECT streets.id, streets.created_at, streets.updated_at, streets.name, streets.suburb_id
+SELECT streets.name, streets.suburb_id
 FROM streets
 INNER JOIN suburbs
 ON streets.suburb_id = suburbs.id
 WHERE suburbs.name = ?1
 `
 
-func (q *Queries) GetStreetsBySuburbName(ctx context.Context, name string) ([]Street, error) {
+type GetStreetsBySuburbNameRow struct {
+	Name     string
+	SuburbID uuid.UUID
+}
+
+func (q *Queries) GetStreetsBySuburbName(ctx context.Context, name string) ([]GetStreetsBySuburbNameRow, error) {
 	rows, err := q.db.QueryContext(ctx, getStreetsBySuburbName, name)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Street
+	var items []GetStreetsBySuburbNameRow
 	for rows.Next() {
-		var i Street
-		if err := rows.Scan(
-			&i.ID,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-			&i.Name,
-			&i.SuburbID,
-		); err != nil {
+		var i GetStreetsBySuburbNameRow
+		if err := rows.Scan(&i.Name, &i.SuburbID); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
