@@ -4,8 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-
-	"github.com/gorilla/mux"
+	"strings"
 )
 
 type Street struct {
@@ -18,16 +17,12 @@ type StreetsPageData struct {
 }
 
 func (cfg *Config) HandlerStreets(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-
-	suburbSlug, ok := vars["suburb"]
-	if !ok {
+	suburbName := r.URL.Query().Get("suburbName")
+	if suburbName == "" {
 		err := fmt.Errorf("suburb parameter required")
 		cfg.respondWithError(w, http.StatusInternalServerError, err.Error(), err)
 		return
 	}
-	suburbName := fromSlug(suburbSlug)
-	fmt.Println("Getting streets for suburb:", suburbName)
 
 	dbStreets, err := cfg.db.GetStreetsBySuburbName(context.Background(), suburbName)
 	if err != nil {
@@ -44,9 +39,27 @@ func (cfg *Config) HandlerStreets(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	data := StreetsPageData{
-		Streets: streets,
+	if r.Header.Get("HX-Request") != "true" {
+		cfg.respondWithHTML(w, "streets.html", StreetsPageData{Streets: streets})
+		return
 	}
 
-	cfg.respondWithHTML(w, "streets.html", data)
+	if r.URL.Query().Has("q") {
+		query := r.URL.Query().Get("q")
+		filteredStreets := filterStreets(streets, query)
+		cfg.respondWithHTML(w, "streets-list", StreetsPageData{Streets: filteredStreets})
+		return
+	}
+	cfg.respondWithHTML(w, "streets-partial.html", StreetsPageData{Streets: streets})
+}
+
+func filterStreets(streets []Street, query string) []Street {
+	filtered := make([]Street, 0)
+	for _, street := range streets {
+		if strings.Contains(strings.ToLower(street.Name), strings.ToLower(query)) {
+			filtered = append(filtered, street)
+		}
+	}
+
+	return filtered
 }

@@ -15,11 +15,24 @@ type SuburbsPageData struct {
 }
 
 func (cfg *Config) HandlerSuburbs(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "text/html")
-
-	data := SuburbsPageData{
-		Suburbs: cfg.suburbs,
+	if r.Header.Get("HX-Request") == "true" {
+		query := r.URL.Query().Get("q")
+		filteredSuburbs := filterSuburbs(cfg.suburbs, query)
+		cfg.respondWithHTML(w, "suburbs-list", SuburbsPageData{Suburbs: filteredSuburbs})
+		return
 	}
 
-	respondWithHTML(w, http.StatusOK, cfg.templates["index.html"], data)
+	cfg.respondWithHTML(w, "index.html", SuburbsPageData{Suburbs: cfg.suburbs})
+}
+
+func filterSuburbs(suburbs []Suburb, query string) []Suburb {
+	filtered := make([]Suburb, 0)
+
+	for _, suburb := range suburbs {
+		if strings.Contains(strings.ToLower(suburb.Name), strings.ToLower(query)) {
+			filtered = append(filtered, suburb)
+		}
+	}
+
+	return filtered
 }

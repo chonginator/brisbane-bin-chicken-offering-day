@@ -1,10 +1,8 @@
-{{ define "content" }}
 <h2>Addresses</h2>
 <div>
   {{ range .Addresses}}
-  <a href="./addresses/{{ .Slug }}/collections">
+  <a href="./addresses/{{ .Slug }}/collections" hx-boost="true" hx-target="#main">
     {{ .AddressString }}
   </a>
   {{ end }}
 </div>
-{{ end }}

@@ -10,7 +10,12 @@
 
 <body>
   <h1>Brisbane Bin Chicken Day</h1>
-  {{ block "content" . }}{{ end }}
+  <main id="main">
+    <h2>Suburbs</h2>
+    <input id="search" type="search" name="q" placeholder="Search" hx-get="/suburbs"
+      hx-trigger="input changed delay:500ms" hx-target="#suburbs-list" hx-swap="outerHTML">
+    {{ template "suburbs-list" . }}
+  </main>
 </body>
 
 </html>

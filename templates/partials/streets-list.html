@@ -1,0 +1,9 @@
+{{ define "streets-list" }}
+<div id="streets-list">
+  {{ range .Streets }}
+  <a href="./streets/{{ .Slug }}/addresses" hx-boost="true" hx-target="#main">
+    {{ .Name }}
+  </a>
+  {{ end }}
+</div>
+{{ end }}

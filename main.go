@@ -32,7 +32,10 @@ func main() {
 		log.Fatalf("Error initializing API config: %v", err)
 	}
 
-	mux := mux.NewRouter()
+	mux := mux.NewRouter().StrictSlash(true)
+
+	mux.PathPrefix("/static").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
+
 	mux.HandleFunc("/", apiCfg.HandlerRoot)
 	mux.HandleFunc("/suburbs", apiCfg.HandlerSuburbs)
 	mux.HandleFunc("/suburbs/{suburb}/streets", apiCfg.HandlerStreets)
