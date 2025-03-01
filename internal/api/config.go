@@ -17,7 +17,7 @@ import (
 type Config struct {
 	db        *database.Queries
 	suburbs   []Suburb
-	templates map[string]*template.Template
+	templates *template.Template
 }
 
 func NewAPIConfig(dbURL string) (*Config, error) {
@@ -68,28 +68,26 @@ func fromSlug(name string) string {
 	return caser.String(strings.Join(strings.Split(name, "-"), " "))
 }
 
-func parseTemplates() (map[string]*template.Template, error) {
-	files, err := filepath.Glob("templates/*.html")
+func parseTemplates() (*template.Template, error) {
+	pages, err := filepath.Glob("templates/pages/*.html")
 	if err != nil {
-		return nil, fmt.Errorf("error finding templates: %w", err)
+		return nil, fmt.Errorf("error finding page templates: %w", err)
 	}
 
-	templates := make(map[string]*template.Template)
-	layoutFile := "templates/layout.html"
-
-	for _, file := range files {
-		if file == layoutFile {
-			continue
-		}
-
-		name := filepath.Base(file)
-		tmpl, err := template.ParseFiles(layoutFile, file)
-		if err != nil {
-			return nil, fmt.Errorf("error parsing template: %w", err)
-		}
-
-		templates[name] = tmpl
+	tmpl, err := template.ParseFiles(pages...)
+	if err != nil {
+		return nil, fmt.Errorf("error parsing page template: %w", err)
 	}
 
-	return templates, nil
+	partials, err := filepath.Glob("templates/partials/*.html")
+	if err != nil {
+		return nil, fmt.Errorf("error finding partial templates: %w", err)
+	}
+
+	tmpl, err = tmpl.ParseFiles(partials...)
+	if err != nil {
+		return nil, fmt.Errorf("error parsing partial templates: %w", err)
+	}
+
+	return tmpl, nil
 }

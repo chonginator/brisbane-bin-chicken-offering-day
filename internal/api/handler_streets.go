@@ -23,14 +23,16 @@ func (cfg *Config) HandlerStreets(w http.ResponseWriter, r *http.Request) {
 	suburbSlug, ok := vars["suburb"]
 	if !ok {
 		err := fmt.Errorf("suburb parameter required")
-		respondWithError(w, http.StatusInternalServerError, err.Error(), err)
+		cfg.respondWithError(w, http.StatusInternalServerError, err.Error(), err)
+		return
 	}
 	suburbName := fromSlug(suburbSlug)
+	fmt.Println("Getting streets for suburb:", suburbName)
 
 	dbStreets, err := cfg.db.GetStreetsBySuburbName(context.Background(), suburbName)
 	if err != nil {
 		err = fmt.Errorf("couldn't find streets for %s: %w", suburbName, err)
-		respondWithError(w, http.StatusInternalServerError, "failed to fetch streets", err)
+		cfg.respondWithError(w, http.StatusInternalServerError, "failed to fetch streets", err)
 		return
 	}
 
@@ -46,5 +48,5 @@ func (cfg *Config) HandlerStreets(w http.ResponseWriter, r *http.Request) {
 		Streets: streets,
 	}
 
-	respondWithHTML(w, http.StatusOK, cfg.templates["streets.html"], data)
+	cfg.respondWithHTML(w, "streets.html", data)
 }

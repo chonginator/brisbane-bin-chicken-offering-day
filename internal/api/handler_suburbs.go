@@ -2,6 +2,7 @@ package api
 
 import (
 	"net/http"
+	"strings"
 )
 
 type Suburb struct {

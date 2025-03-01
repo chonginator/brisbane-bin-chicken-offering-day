@@ -24,14 +24,14 @@ func (cfg *Config) HandlerAddresses(w http.ResponseWriter, r *http.Request) {
 	streetSlug, ok := vars["street"]
 	if !ok {
 		err := fmt.Errorf("street parameter is required")
-		respondWithError(w, http.StatusInternalServerError, err.Error(), err)
+		cfg.respondWithError(w, http.StatusInternalServerError, err.Error(), err)
 	}
 	streetName := fromSlug(streetSlug)
 
 	dbAddresses, err := cfg.db.GetAddressesByStreetName(context.Background(), streetName)
 	if err != nil {
 		err = fmt.Errorf("couldn't find addresses for %s: %w", streetName, err)
-		respondWithError(w, http.StatusInternalServerError, "failed to fetch addresses", err)
+		cfg.respondWithError(w, http.StatusInternalServerError, "failed to fetch addresses", err)
 		return
 	}
 
@@ -49,7 +49,7 @@ func (cfg *Config) HandlerAddresses(w http.ResponseWriter, r *http.Request) {
 		addressString, err := toAddressString(unitNumber, address.HouseNumber, houseNumberSuffix, streetName)
 		if err != nil {
 			err = fmt.Errorf("couldn't build address string: %w", err)
-			respondWithError(w, http.StatusInternalServerError, err.Error(), err)
+			cfg.respondWithError(w, http.StatusInternalServerError, err.Error(), err)
 			return
 		}
 
@@ -63,8 +63,7 @@ func (cfg *Config) HandlerAddresses(w http.ResponseWriter, r *http.Request) {
 		Addresses: addresses,
 	}
 
-	respondWithHTML(w, http.StatusOK, cfg.templates["addresses.html"], data)
-
+	cfg.respondWithHTML(w, "addresses.html", data)
 }
 
 func toAddressString(unitNumber, houseNumber, houseNumberSuffix, streetName string) (string, error) {
