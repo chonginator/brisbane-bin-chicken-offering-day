@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
-
-	"github.com/gorilla/mux"
 )
 
 type Address struct {
@@ -19,14 +17,11 @@ type AddressesPageData struct {
 }
 
 func (cfg *Config) HandlerAddresses(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-
-	streetSlug, ok := vars["street"]
-	if !ok {
-		err := fmt.Errorf("street parameter is required")
+	streetName := r.URL.Query().Get("streetName")
+	if streetName == "" {
+		err := fmt.Errorf("street name parameter is required")
 		cfg.respondWithError(w, http.StatusInternalServerError, err.Error(), err)
 	}
-	streetName := fromSlug(streetSlug)
 
 	dbAddresses, err := cfg.db.GetAddressesByStreetName(context.Background(), streetName)
 	if err != nil {
