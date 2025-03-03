@@ -43,10 +43,11 @@ func main() {
 	mux.HandleFunc("/suburbs/{suburb}/streets/{street}/addresses/{property_id}/collections", apiCfg.HandlerCollections)
 
 	srv := &http.Server{
-		Addr:              ":" + port,
-		Handler:           mux,
-		ReadHeaderTimeout: 30 * time.Second,
-		WriteTimeout:      30 * time.Second,
+		Addr:         ":" + port,
+		Handler:      mux,
+		ReadTimeout:  30 * time.Second,
+		WriteTimeout: 90 * time.Second,
+		IdleTimeout:  120 * time.Second,
 	}
 
 	log.Printf("Serving on port: %s\n", port)
