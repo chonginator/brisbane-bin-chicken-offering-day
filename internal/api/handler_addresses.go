@@ -59,11 +59,30 @@ func (cfg *Config) HandlerAddresses(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	data := AddressesPageData{
-		Addresses: addresses,
+	if r.Header.Get("HX-Request") != "true" {
+		cfg.respondWithHTML(w, "addresses.html", AddressesPageData{Addresses: addresses})
+		return
 	}
 
-	cfg.respondWithHTML(w, "addresses.html", data)
+	if r.URL.Query().Has("q") {
+		query := r.URL.Query().Get("q")
+		filteredAddresses := filterAddresses(addresses, query)
+		cfg.respondWithHTML(w, "addresses-list", AddressesPageData{Addresses: filteredAddresses})
+		return
+	}
+
+	cfg.respondWithHTML(w, "addresses-partial", AddressesPageData{Addresses: addresses})
+}
+
+func filterAddresses(addresses []Address, query string) []Address {
+	filtered := make([]Address, 0)
+	for _, address := range addresses {
+		if strings.Contains(strings.ToLower(address.AddressString), strings.ToLower(query)) {
+			filtered = append(filtered, address)
+		}
+	}
+
+	return filtered
 }
 
 func toAddressString(unitNumber, houseNumber, houseNumberSuffix, streetName string) (string, error) {

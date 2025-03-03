@@ -1,8 +1,8 @@
 {{ block "streets-partial" . }}
 <div id="streets">
   <h2>Streets</h2>
-  <input id="search" type="text" name="q" hx-get="" hx-trigger="input changed delay:500ms" hx-target="#streets-list"
-    hx-swap="outerHTML" placeholder="Search">
+  <input id="search" type="text" name="q" placeholder="Search" hx-get="" hx-trigger="input changed delay:500ms"
+    hx-target="#streets-list" hx-swap="outerHTML">
   {{ template "streets-list" . }}
 </div>
 {{ end }}
