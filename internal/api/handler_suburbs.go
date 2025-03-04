@@ -22,6 +22,13 @@ func (cfg *Config) HandlerSuburbs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if r.URL.Query().Has("q") {
+		query := r.URL.Query().Get("q")
+		filteredSuburbs := filterSuburbs(cfg.suburbs, query)
+		cfg.respondWithHTML(w, "index.html", SuburbsPageData{Suburbs: filteredSuburbs})
+		return
+	}
+
 	cfg.respondWithHTML(w, "index.html", SuburbsPageData{Suburbs: cfg.suburbs})
 }
 

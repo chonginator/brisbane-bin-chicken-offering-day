@@ -13,7 +13,7 @@
   <main id="main">
     <h2>Suburbs</h2>
     <input id="search" type="search" name="q" placeholder="Search" hx-get="/suburbs"
-      hx-trigger="input changed delay:500ms" hx-target="#suburbs-list" hx-swap="outerHTML">
+      hx-trigger="input changed delay:500ms" hx-target="#suburbs-list" hx-swap="outerHTML" hx-push-url="true">
     {{ template "suburbs-list" . }}
   </main>
 </body>
