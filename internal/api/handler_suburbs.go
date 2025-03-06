@@ -18,25 +18,16 @@ type SuburbsPageData struct {
 func (cfg *Config) HandlerSuburbs(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query().Get("q")
 
-	if r.Header.Get("HX-Request") == "true" {
-		filteredSuburbs := filterSuburbs(cfg.suburbs, query)
-		cfg.respondWithHTML(w, "suburbs-list", SuburbsPageData{
-			Suburbs: filteredSuburbs,
-			Query: query,
-		})
-		return
-	}
+	suburbs := cfg.suburbs
 
 	if r.URL.Query().Has("q") {
-		filteredSuburbs := filterSuburbs(cfg.suburbs, query)
-		cfg.respondWithHTML(w, "suburbs", SuburbsPageData{
-			Suburbs: filteredSuburbs,
-			Query: query,
-		})
-		return
+		suburbs = filterSuburbs(cfg.suburbs, query)
 	}
 
-	cfg.respondWithHTML(w, "suburbs", SuburbsPageData{Suburbs: cfg.suburbs})
+	cfg.respondWithHTML(w, "index.html", SuburbsPageData{
+		Suburbs: suburbs,
+		Query: query,
+	})
 }
 
 func filterSuburbs(suburbs []Suburb, query string) []Suburb {
