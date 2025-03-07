@@ -14,6 +14,9 @@ type Street struct {
 
 type StreetsPageData struct {
 	Streets []Street
+	SuburbName string
+	SuburbSlug string
+	Query string
 }
 
 func (cfg *Config) HandlerStreets(w http.ResponseWriter, r *http.Request) {
@@ -23,6 +26,8 @@ func (cfg *Config) HandlerStreets(w http.ResponseWriter, r *http.Request) {
 		cfg.respondWithError(w, http.StatusInternalServerError, err.Error(), err)
 		return
 	}
+
+	suburbSlug := toSlug(suburbName)
 
 	dbStreets, err := cfg.db.GetStreetsBySuburbName(context.Background(), suburbName)
 	if err != nil {
@@ -39,18 +44,17 @@ func (cfg *Config) HandlerStreets(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	if r.Header.Get("HX-Request") != "true" {
-		cfg.respondWithHTML(w, "streets.html", StreetsPageData{Streets: streets})
-		return
+	query := r.URL.Query().Get("q")
+	if r.URL.Query().Has("q") {
+		streets = filterStreets(streets, query)
 	}
 
-	if r.URL.Query().Has("q") {
-		query := r.URL.Query().Get("q")
-		filteredStreets := filterStreets(streets, query)
-		cfg.respondWithHTML(w, "streets-list", StreetsPageData{Streets: filteredStreets})
-		return
-	}
-	cfg.respondWithHTML(w, "streets-partial.html", StreetsPageData{Streets: streets})
+	cfg.respondWithHTML(w, "streets.html", StreetsPageData{
+		Streets: streets,
+		Query: query,
+		SuburbName: suburbName,
+		SuburbSlug: suburbSlug,
+	})
 }
 
 func filterStreets(streets []Street, query string) []Street {

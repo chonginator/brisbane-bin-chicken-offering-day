@@ -13,7 +13,7 @@
   <main id="main">
     <h2>Suburbs</h2>
     <div id="suburbs-container">
-      <input id="search" type="search" name="q" value="{{.Query}}" placeholder="Search" hx-get="/suburbs"
+      <input id="search" type="search" name="q" value="{{ .Query }}" placeholder="Search" hx-get="/suburbs"
         hx-trigger="input changed delay:500ms" hx-target="#suburbs-container" hx-select="#suburbs-container"
         hx-swap="outerHTML" hx-push-url="true">
       {{ template "suburbs-list" . }}

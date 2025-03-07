@@ -11,7 +11,14 @@
 <body>
   <h1>Brisbane Bin Chicken Day</h1>
   <main id="main">
-    {{ template "streets-partial" . }}
+    <div id="streets-container">
+      <h2>Streets</h2>
+      <input id="search" type="text" name="q" value="{{ .Query }}" placeholder="Search"
+        hx-get="/suburbs/{{ .SuburbSlug }}/streets" hx-trigger="input changed delay:500ms"
+        hx-target="#streets-container" hx-select="#streets-container" hx-swap="outerHTML" hx-push-url="true"
+        hx-vals='{"suburbName": "{{ .SuburbName }}"}'>
+      {{ template "streets-list" . }}
+    </div>
   </main>
 </body>
 
