@@ -46,7 +46,7 @@ func (cfg *Config) HandlerAddresses(w http.ResponseWriter, r *http.Request) {
 		}
 
 		addresses[i] = resource.Resource{
-			Slug:          address.PropertyID,
+			Slug: address.PropertyID,
 			Name: addressString,
 		}
 	}
