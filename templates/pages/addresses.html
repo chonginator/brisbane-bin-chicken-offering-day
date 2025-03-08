@@ -8,9 +8,10 @@
   <script src="/static/js/htmx.min.js"></script>
 </head>
 
-<body>
+<body hx-boost="true">
   <h1>Brisbane Bin Chicken Day</h1>
   <main id="main">
+    <a href="#" hx-on:click="event.preventDefault(); history.back()">Back</a>
     <div id="addresses">
       <h2>Addresses</h2>
       <input id="search" type="text" name="q" placeholder="Search" hx-get="" hx-trigger="input changed delay:500ms"

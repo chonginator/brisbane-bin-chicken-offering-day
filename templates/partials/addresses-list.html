@@ -1,7 +1,7 @@
 {{ define "addresses-list" }}
 <div id="addresses-list">
   {{ range .Addresses}}
-  <a href="./addresses/{{ .Slug }}/collections" hx-boost="true" hx-target="#main">
+  <a href="./addresses/{{ .Slug }}/collections" hx-target="#main" hx-select="#main">
     {{ .AddressString }}
   </a>
   {{ end }}
