@@ -2,7 +2,7 @@
 <div id="addresses-list">
   {{ range .Addresses}}
   <a href="./addresses/{{ .Slug }}/collections" hx-target="#main" hx-select="#main">
-    {{ .AddressString }}
+    {{ .Name }}
   </a>
   {{ end }}
 </div>

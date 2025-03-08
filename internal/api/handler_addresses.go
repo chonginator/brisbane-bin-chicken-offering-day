@@ -5,15 +5,12 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+
+	"github.com/chonginator/brisbane-bin-chicken-offering-day/internal/resource"
 )
 
-type Address struct {
-	AddressString string
-	Slug          string
-}
-
 type AddressesPageData struct {
-	Addresses []Address
+	Addresses []resource.Resource
 }
 
 func (cfg *Config) HandlerAddresses(w http.ResponseWriter, r *http.Request) {
@@ -30,7 +27,7 @@ func (cfg *Config) HandlerAddresses(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	addresses := make([]Address, len(dbAddresses))
+	addresses := make([]resource.Resource, len(dbAddresses))
 
 	for i, address := range dbAddresses {
 		var unitNumber, houseNumberSuffix string
@@ -48,31 +45,20 @@ func (cfg *Config) HandlerAddresses(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		addresses[i] = Address{
+		addresses[i] = resource.Resource{
 			Slug:          address.PropertyID,
-			AddressString: addressString,
+			Name: addressString,
 		}
 	}
 
 	query := r.URL.Query().Get("q")
 	if r.URL.Query().Has("q") {
-		addresses = filterAddresses(addresses, query)
+		addresses = resource.FilterByName(addresses, query)
 	}
 
 	cfg.respondWithHTML(w, "addresses.html", AddressesPageData{
 		Addresses: addresses,
 	})
-}
-
-func filterAddresses(addresses []Address, query string) []Address {
-	filtered := make([]Address, 0)
-	for _, address := range addresses {
-		if strings.Contains(strings.ToLower(address.AddressString), strings.ToLower(query)) {
-			filtered = append(filtered, address)
-		}
-	}
-
-	return filtered
 }
 
 func toAddressString(unitNumber, houseNumber, houseNumberSuffix, streetName string) (string, error) {

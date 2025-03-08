@@ -10,11 +10,12 @@ import (
 	"strings"
 
 	"github.com/chonginator/brisbane-bin-chicken-offering-day/internal/database"
+	"github.com/chonginator/brisbane-bin-chicken-offering-day/internal/resource"
 )
 
 type Config struct {
 	db        *database.Queries
-	suburbs   []Suburb
+	suburbs   []resource.Resource
 	templates *template.Template
 }
 
@@ -31,9 +32,9 @@ func NewAPIConfig(dbURL string) (*Config, error) {
 		return nil, fmt.Errorf("error getting suburbs from database: %w", err)
 	}
 
-	suburbs := make([]Suburb, 0, len(dbSuburbs))
+	suburbs := make([]resource.Resource, 0, len(dbSuburbs))
 	for _, suburb := range dbSuburbs {
-		suburbs = append(suburbs, Suburb{
+		suburbs = append(suburbs, resource.Resource{
 			Name: suburb.Name,
 			Slug: toSlug(suburb.Name),
 		})

@@ -4,16 +4,12 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"strings"
+
+	"github.com/chonginator/brisbane-bin-chicken-offering-day/internal/resource"
 )
 
-type Street struct {
-	Name string
-	Slug string
-}
-
 type StreetsPageData struct {
-	Streets    []Street
+	Streets    []resource.Resource
 	SuburbName string
 	SuburbSlug string
 	Query      string
@@ -36,9 +32,9 @@ func (cfg *Config) HandlerStreets(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	streets := make([]Street, len(dbStreets))
+	streets := make([]resource.Resource, len(dbStreets))
 	for i, street := range dbStreets {
-		streets[i] = Street{
+		streets[i] = resource.Resource{
 			Name: street.Name,
 			Slug: toSlug(street.Name),
 		}
@@ -46,7 +42,7 @@ func (cfg *Config) HandlerStreets(w http.ResponseWriter, r *http.Request) {
 
 	query := r.URL.Query().Get("q")
 	if r.URL.Query().Has("q") {
-		streets = filterStreets(streets, query)
+		streets = resource.FilterByName(streets, query)
 	}
 
 	cfg.respondWithHTML(w, "streets.html", StreetsPageData{
@@ -55,15 +51,4 @@ func (cfg *Config) HandlerStreets(w http.ResponseWriter, r *http.Request) {
 		SuburbName: suburbName,
 		SuburbSlug: suburbSlug,
 	})
-}
-
-func filterStreets(streets []Street, query string) []Street {
-	filtered := make([]Street, 0)
-	for _, street := range streets {
-		if strings.Contains(strings.ToLower(street.Name), strings.ToLower(query)) {
-			filtered = append(filtered, street)
-		}
-	}
-
-	return filtered
 }
