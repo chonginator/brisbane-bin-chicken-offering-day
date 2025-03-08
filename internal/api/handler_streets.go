@@ -13,10 +13,10 @@ type Street struct {
 }
 
 type StreetsPageData struct {
-	Streets []Street
+	Streets    []Street
 	SuburbName string
 	SuburbSlug string
-	Query string
+	Query      string
 }
 
 func (cfg *Config) HandlerStreets(w http.ResponseWriter, r *http.Request) {
@@ -50,8 +50,8 @@ func (cfg *Config) HandlerStreets(w http.ResponseWriter, r *http.Request) {
 	}
 
 	cfg.respondWithHTML(w, "streets.html", StreetsPageData{
-		Streets: streets,
-		Query: query,
+		Streets:    streets,
+		Query:      query,
 		SuburbName: suburbName,
 		SuburbSlug: suburbSlug,
 	})

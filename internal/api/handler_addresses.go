@@ -54,19 +54,14 @@ func (cfg *Config) HandlerAddresses(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	if r.Header.Get("HX-Request") != "true" {
-		cfg.respondWithHTML(w, "addresses.html", AddressesPageData{Addresses: addresses})
-		return
-	}
-
+	query := r.URL.Query().Get("q")
 	if r.URL.Query().Has("q") {
-		query := r.URL.Query().Get("q")
-		filteredAddresses := filterAddresses(addresses, query)
-		cfg.respondWithHTML(w, "addresses-list", AddressesPageData{Addresses: filteredAddresses})
-		return
+		addresses = filterAddresses(addresses, query)
 	}
 
-	cfg.respondWithHTML(w, "addresses-partial", AddressesPageData{Addresses: addresses})
+	cfg.respondWithHTML(w, "addresses.html", AddressesPageData{
+		Addresses: addresses,
+	})
 }
 
 func filterAddresses(addresses []Address, query string) []Address {

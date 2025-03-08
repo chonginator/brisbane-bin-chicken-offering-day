@@ -12,7 +12,7 @@ type Suburb struct {
 
 type SuburbsPageData struct {
 	Suburbs []Suburb
-	Query string
+	Query   string
 }
 
 func (cfg *Config) HandlerSuburbs(w http.ResponseWriter, r *http.Request) {
@@ -26,7 +26,7 @@ func (cfg *Config) HandlerSuburbs(w http.ResponseWriter, r *http.Request) {
 
 	cfg.respondWithHTML(w, "index.html", SuburbsPageData{
 		Suburbs: suburbs,
-		Query: query,
+		Query:   query,
 	})
 }
 
