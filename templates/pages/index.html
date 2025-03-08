@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Brisbane Bin Chicken Offering Day</title>
+  <script src="/static/js/htmx.min.js"></script>
+</head>
+
+<body hx-boost="true">
+  <h1>Brisbane Bin Chicken Day</h1>
+  <main id="main">
+    <h2>Suburbs</h2>
+    <div id="suburbs-container">
+      <input id="search" type="search" name="q" value="{{ .Query }}" placeholder="Search" hx-get="/suburbs"
+        hx-trigger="input changed delay:500ms" hx-target="#suburbs-container" hx-select="#suburbs-container"
+        hx-swap="outerHTML">
+      {{ template "suburbs-list" . }}
+    </div>
+  </main>
+</body>
+
+</html>

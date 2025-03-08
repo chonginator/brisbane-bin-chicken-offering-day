@@ -125,33 +125,38 @@ func (q *Queries) GetAddressBatch(ctx context.Context, arg GetAddressBatchParams
 }
 
 const getAddressesByStreetName = `-- name: GetAddressesByStreetName :many
-SELECT addresses.id, addresses.created_at, addresses.updated_at, addresses.property_id, addresses.unit_number, addresses.house_number, addresses.house_number_suffix, addresses.street_id, addresses.collection_day, addresses.zone
+SELECT DISTINCT
+  addresses.property_id, 
+  addresses.unit_number, 
+  addresses.house_number, 
+  addresses.house_number_suffix
 FROM addresses
 INNER JOIN streets
 ON addresses.street_id = streets.id
 WHERE streets.name = ?1
 `
 
-func (q *Queries) GetAddressesByStreetName(ctx context.Context, name string) ([]Address, error) {
+type GetAddressesByStreetNameRow struct {
+	PropertyID        string
+	UnitNumber        sql.NullString
+	HouseNumber       string
+	HouseNumberSuffix sql.NullString
+}
+
+func (q *Queries) GetAddressesByStreetName(ctx context.Context, name string) ([]GetAddressesByStreetNameRow, error) {
 	rows, err := q.db.QueryContext(ctx, getAddressesByStreetName, name)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Address
+	var items []GetAddressesByStreetNameRow
 	for rows.Next() {
-		var i Address
+		var i GetAddressesByStreetNameRow
 		if err := rows.Scan(
-			&i.ID,
-			&i.CreatedAt,
-			&i.UpdatedAt,
 			&i.PropertyID,
 			&i.UnitNumber,
 			&i.HouseNumber,
 			&i.HouseNumberSuffix,
-			&i.StreetID,
-			&i.CollectionDay,
-			&i.Zone,
 		); err != nil {
 			return nil, err
 		}

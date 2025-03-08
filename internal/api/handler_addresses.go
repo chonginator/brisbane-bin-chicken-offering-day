@@ -6,36 +6,28 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/gorilla/mux"
+	"github.com/chonginator/brisbane-bin-chicken-offering-day/internal/resource"
 )
 
-type Address struct {
-	AddressString string
-	Slug          string
-}
-
 type AddressesPageData struct {
-	Addresses []Address
+	Addresses []resource.Resource
 }
 
 func (cfg *Config) HandlerAddresses(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-
-	streetSlug, ok := vars["street"]
-	if !ok {
-		err := fmt.Errorf("street parameter is required")
-		respondWithError(w, http.StatusInternalServerError, err.Error(), err)
+	streetName := r.URL.Query().Get("streetName")
+	if streetName == "" {
+		err := fmt.Errorf("street name parameter is required")
+		cfg.respondWithError(w, http.StatusInternalServerError, err.Error(), err)
 	}
-	streetName := fromSlug(streetSlug)
 
 	dbAddresses, err := cfg.db.GetAddressesByStreetName(context.Background(), streetName)
 	if err != nil {
 		err = fmt.Errorf("couldn't find addresses for %s: %w", streetName, err)
-		respondWithError(w, http.StatusInternalServerError, "failed to fetch addresses", err)
+		cfg.respondWithError(w, http.StatusInternalServerError, "failed to fetch addresses", err)
 		return
 	}
 
-	addresses := make([]Address, len(dbAddresses))
+	addresses := make([]resource.Resource, len(dbAddresses))
 
 	for i, address := range dbAddresses {
 		var unitNumber, houseNumberSuffix string
@@ -49,22 +41,24 @@ func (cfg *Config) HandlerAddresses(w http.ResponseWriter, r *http.Request) {
 		addressString, err := toAddressString(unitNumber, address.HouseNumber, houseNumberSuffix, streetName)
 		if err != nil {
 			err = fmt.Errorf("couldn't build address string: %w", err)
-			respondWithError(w, http.StatusInternalServerError, err.Error(), err)
+			cfg.respondWithError(w, http.StatusInternalServerError, err.Error(), err)
 			return
 		}
 
-		addresses[i] = Address{
-			Slug:          address.PropertyID,
-			AddressString: addressString,
+		addresses[i] = resource.Resource{
+			Slug: address.PropertyID,
+			Name: addressString,
 		}
 	}
 
-	data := AddressesPageData{
-		Addresses: addresses,
+	query := r.URL.Query().Get("q")
+	if r.URL.Query().Has("q") {
+		addresses = resource.FilterByName(addresses, query)
 	}
 
-	respondWithHTML(w, http.StatusOK, cfg.templates["addresses.html"], data)
-
+	cfg.respondWithHTML(w, "addresses.html", AddressesPageData{
+		Addresses: addresses,
+	})
 }
 
 func toAddressString(unitNumber, houseNumber, houseNumberSuffix, streetName string) (string, error) {

@@ -5,46 +5,50 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/gorilla/mux"
+	"github.com/chonginator/brisbane-bin-chicken-offering-day/internal/resource"
 )
 
-type Street struct {
-	Name string
-	Slug string
-}
-
 type StreetsPageData struct {
-	Streets []Street
+	Streets    []resource.Resource
+	SuburbName string
+	SuburbSlug string
+	Query      string
 }
 
 func (cfg *Config) HandlerStreets(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-
-	suburbSlug, ok := vars["suburb"]
-	if !ok {
+	suburbName := r.URL.Query().Get("suburbName")
+	if suburbName == "" {
 		err := fmt.Errorf("suburb parameter required")
-		respondWithError(w, http.StatusInternalServerError, err.Error(), err)
+		cfg.respondWithError(w, http.StatusInternalServerError, err.Error(), err)
+		return
 	}
-	suburbName := fromSlug(suburbSlug)
+
+	suburbSlug := toSlug(suburbName)
 
 	dbStreets, err := cfg.db.GetStreetsBySuburbName(context.Background(), suburbName)
 	if err != nil {
 		err = fmt.Errorf("couldn't find streets for %s: %w", suburbName, err)
-		respondWithError(w, http.StatusInternalServerError, "failed to fetch streets", err)
+		cfg.respondWithError(w, http.StatusInternalServerError, "failed to fetch streets", err)
 		return
 	}
 
-	streets := make([]Street, len(dbStreets))
+	streets := make([]resource.Resource, len(dbStreets))
 	for i, street := range dbStreets {
-		streets[i] = Street{
+		streets[i] = resource.Resource{
 			Name: street.Name,
 			Slug: toSlug(street.Name),
 		}
 	}
 
-	data := StreetsPageData{
-		Streets: streets,
+	query := r.URL.Query().Get("q")
+	if r.URL.Query().Has("q") {
+		streets = resource.FilterByName(streets, query)
 	}
 
-	respondWithHTML(w, http.StatusOK, cfg.templates["streets.html"], data)
+	cfg.respondWithHTML(w, "streets.html", StreetsPageData{
+		Streets:    streets,
+		Query:      query,
+		SuburbName: suburbName,
+		SuburbSlug: suburbSlug,
+	})
 }

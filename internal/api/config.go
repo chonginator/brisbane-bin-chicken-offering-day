@@ -10,14 +10,13 @@ import (
 	"strings"
 
 	"github.com/chonginator/brisbane-bin-chicken-offering-day/internal/database"
-	"golang.org/x/text/cases"
-	"golang.org/x/text/language"
+	"github.com/chonginator/brisbane-bin-chicken-offering-day/internal/resource"
 )
 
 type Config struct {
 	db        *database.Queries
-	suburbs   []Suburb
-	templates map[string]*template.Template
+	suburbs   []resource.Resource
+	templates *template.Template
 }
 
 func NewAPIConfig(dbURL string) (*Config, error) {
@@ -33,9 +32,9 @@ func NewAPIConfig(dbURL string) (*Config, error) {
 		return nil, fmt.Errorf("error getting suburbs from database: %w", err)
 	}
 
-	suburbs := make([]Suburb, 0, len(dbSuburbs))
+	suburbs := make([]resource.Resource, 0, len(dbSuburbs))
 	for _, suburb := range dbSuburbs {
-		suburbs = append(suburbs, Suburb{
+		suburbs = append(suburbs, resource.Resource{
 			Name: suburb.Name,
 			Slug: toSlug(suburb.Name),
 		})
@@ -63,33 +62,26 @@ func toSlug(name string) string {
 	return strings.Join(strings.Split(strings.ToLower(name), " "), "-")
 }
 
-func fromSlug(name string) string {
-	caser := cases.Title(language.English)
-	return caser.String(strings.Join(strings.Split(name, "-"), " "))
-}
-
-func parseTemplates() (map[string]*template.Template, error) {
-	files, err := filepath.Glob("templates/*.html")
+func parseTemplates() (*template.Template, error) {
+	pages, err := filepath.Glob("templates/pages/*.html")
 	if err != nil {
-		return nil, fmt.Errorf("error finding templates: %w", err)
+		return nil, fmt.Errorf("error finding page templates: %w", err)
 	}
 
-	templates := make(map[string]*template.Template)
-	layoutFile := "templates/layout.html"
-
-	for _, file := range files {
-		if file == layoutFile {
-			continue
-		}
-
-		name := filepath.Base(file)
-		tmpl, err := template.ParseFiles(layoutFile, file)
-		if err != nil {
-			return nil, fmt.Errorf("error parsing template: %w", err)
-		}
-
-		templates[name] = tmpl
+	tmpl, err := template.ParseFiles(pages...)
+	if err != nil {
+		return nil, fmt.Errorf("error parsing page template: %w", err)
 	}
 
-	return templates, nil
+	partials, err := filepath.Glob("templates/partials/*.html")
+	if err != nil {
+		return nil, fmt.Errorf("error finding partial templates: %w", err)
+	}
+
+	tmpl, err = tmpl.ParseFiles(partials...)
+	if err != nil {
+		return nil, fmt.Errorf("error parsing partial templates: %w", err)
+	}
+
+	return tmpl, nil
 }

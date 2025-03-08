@@ -1,8 +1,0 @@
-{{ define "content" }}
-<h2>Suburbs</h2>
-<div>
-  {{ range .Suburbs }}
-  <a href="/suburbs/{{ .Slug }}/streets">{{ .Name }}</a>
-  {{ end }}
-</div>
-{{ end }}

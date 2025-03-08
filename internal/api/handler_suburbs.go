@@ -2,23 +2,25 @@ package api
 
 import (
 	"net/http"
+
+	"github.com/chonginator/brisbane-bin-chicken-offering-day/internal/resource"
 )
 
-type Suburb struct {
-	Name string
-	Slug string
-}
-
 type SuburbsPageData struct {
-	Suburbs []Suburb
+	Suburbs []resource.Resource
+	Query   string
 }
 
 func (cfg *Config) HandlerSuburbs(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "text/html")
+	suburbs := cfg.suburbs
 
-	data := SuburbsPageData{
-		Suburbs: cfg.suburbs,
+	query := r.URL.Query().Get("q")
+	if r.URL.Query().Has("q") {
+		suburbs = resource.FilterByName(cfg.suburbs, query)
 	}
 
-	respondWithHTML(w, http.StatusOK, cfg.templates["index.html"], data)
+	cfg.respondWithHTML(w, "index.html", SuburbsPageData{
+		Suburbs: suburbs,
+		Query:   query,
+	})
 }

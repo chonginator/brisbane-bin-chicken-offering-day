@@ -32,7 +32,10 @@ func main() {
 		log.Fatalf("Error initializing API config: %v", err)
 	}
 
-	mux := mux.NewRouter()
+	mux := mux.NewRouter().StrictSlash(true)
+
+	mux.PathPrefix("/static").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
+
 	mux.HandleFunc("/", apiCfg.HandlerRoot)
 	mux.HandleFunc("/suburbs", apiCfg.HandlerSuburbs)
 	mux.HandleFunc("/suburbs/{suburb}/streets", apiCfg.HandlerStreets)
@@ -40,10 +43,11 @@ func main() {
 	mux.HandleFunc("/suburbs/{suburb}/streets/{street}/addresses/{property_id}/collections", apiCfg.HandlerCollections)
 
 	srv := &http.Server{
-		Addr:              ":" + port,
-		Handler:           mux,
-		ReadHeaderTimeout: 30 * time.Second,
-		WriteTimeout:      30 * time.Second,
+		Addr:         ":" + port,
+		Handler:      mux,
+		ReadTimeout:  30 * time.Second,
+		WriteTimeout: 90 * time.Second,
+		IdleTimeout:  120 * time.Second,
 	}
 
 	log.Printf("Serving on port: %s\n", port)

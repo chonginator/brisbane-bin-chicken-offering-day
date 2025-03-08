@@ -1,0 +1,9 @@
+{{ define "addresses-list" }}
+<div id="addresses-list">
+  {{ range .Addresses}}
+  <a href="./addresses/{{ .Slug }}/collections" hx-target="#main" hx-select="#main">
+    {{ .Name }}
+  </a>
+  {{ end }}
+</div>
+{{ end }}
