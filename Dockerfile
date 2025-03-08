@@ -6,6 +6,8 @@ WORKDIR /app
 
 COPY templates templates
 
+COPY static static
+
 COPY brisbane-bin-chicken-day .
 
 EXPOSE 8080
