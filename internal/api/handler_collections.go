@@ -4,8 +4,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-
-	"github.com/gorilla/mux"
 )
 
 type Collection struct {
@@ -25,9 +23,8 @@ const (
 )
 
 func (cfg *Config) HandlerCollections(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	propertyID, ok := vars["property_id"]
-	if !ok {
+	propertyID := r.PathValue("property_id")
+	if propertyID == "" {
 		err := fmt.Errorf("property_id is required")
 		cfg.respondWithError(w, http.StatusInternalServerError, err.Error(), err)
 		return

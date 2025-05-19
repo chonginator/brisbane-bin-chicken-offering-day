@@ -14,12 +14,14 @@ type AddressesPageData struct {
 }
 
 func (cfg *Config) HandlerAddresses(w http.ResponseWriter, r *http.Request) {
-	streetName := r.URL.Query().Get("streetName")
-	if streetName == "" {
+	streetSlug := r.PathValue("street")
+	if streetSlug == "" {
 		err := fmt.Errorf("street name parameter is required")
 		cfg.respondWithError(w, http.StatusInternalServerError, err.Error(), err)
+		return
 	}
 
+	streetName := toNameFromSlug(streetSlug)
 	dbAddresses, err := cfg.db.GetAddressesByStreetName(context.Background(), streetName)
 	if err != nil {
 		err = fmt.Errorf("couldn't find addresses for %s: %w", streetName, err)

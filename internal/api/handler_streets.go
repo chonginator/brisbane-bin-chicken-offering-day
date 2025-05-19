@@ -16,18 +16,17 @@ type StreetsPageData struct {
 }
 
 func (cfg *Config) HandlerStreets(w http.ResponseWriter, r *http.Request) {
-	suburbName := r.URL.Query().Get("suburbName")
-	if suburbName == "" {
+	suburbSlug := r.PathValue("suburb")
+	if suburbSlug == "" {
 		err := fmt.Errorf("suburb parameter required")
 		cfg.respondWithError(w, http.StatusInternalServerError, err.Error(), err)
 		return
 	}
 
-	suburbSlug := toSlug(suburbName)
-
+	suburbName := toNameFromSlug(suburbSlug)
 	dbStreets, err := cfg.db.GetStreetsBySuburbName(context.Background(), suburbName)
 	if err != nil {
-		err = fmt.Errorf("couldn't find streets for %s: %w", suburbName, err)
+		err = fmt.Errorf("couldn't find streets for %s: %w", suburbSlug, err)
 		cfg.respondWithError(w, http.StatusInternalServerError, "failed to fetch streets", err)
 		return
 	}
@@ -36,7 +35,7 @@ func (cfg *Config) HandlerStreets(w http.ResponseWriter, r *http.Request) {
 	for i, street := range dbStreets {
 		streets[i] = resource.Resource{
 			Name: street.Name,
-			Slug: toSlug(street.Name),
+			Slug: toSlugFromName(street.Name),
 		}
 	}
 
