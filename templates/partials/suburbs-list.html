@@ -1,7 +1,7 @@
 {{ define "suburbs-list" }}
 <div id="suburbs-list">
   {{ range .Suburbs }}
-  <a href="/suburbs/{{ .Slug }}/streets" hx-target="#main" hx-select="#main" hx-vals='{"suburbName": "{{ .Name }}" }'>{{
+  <a href="/suburbs/{{ .Slug }}/streets" hx-target="#main" hx-select="#main">{{
     .Name }}</a>
   {{ end }}
 </div>

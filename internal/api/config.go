@@ -11,6 +11,8 @@ import (
 
 	"github.com/chonginator/brisbane-bin-chicken-offering-day/internal/database"
 	"github.com/chonginator/brisbane-bin-chicken-offering-day/internal/resource"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 type Config struct {
@@ -36,7 +38,7 @@ func NewAPIConfig(dbURL string) (*Config, error) {
 	for _, suburb := range dbSuburbs {
 		suburbs = append(suburbs, resource.Resource{
 			Name: suburb.Name,
-			Slug: toSlug(suburb.Name),
+			Slug: toSlugFromName(suburb.Name),
 		})
 	}
 
@@ -58,8 +60,13 @@ func NewAPIConfig(dbURL string) (*Config, error) {
 	return apiCfg, nil
 }
 
-func toSlug(name string) string {
+func toSlugFromName(name string) string {
 	return strings.Join(strings.Split(strings.ToLower(name), " "), "-")
+}
+
+func toNameFromSlug(slug string) string {
+	caser := cases.Title(language.English)
+	return caser.String(strings.Join(strings.Split(slug, "-"), " "))
 }
 
 func parseTemplates() (*template.Template, error) {

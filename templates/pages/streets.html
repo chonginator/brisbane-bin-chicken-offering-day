@@ -17,8 +17,7 @@
       <h2>Streets</h2>
       <input id="search" type="text" name="q" value="{{ .Query }}" placeholder="Search"
         hx-get="/suburbs/{{ .SuburbSlug }}/streets" hx-trigger="input changed delay:500ms"
-        hx-target="#streets-container" hx-select="#streets-container" hx-swap="outerHTML"
-        hx-vals='{"suburbName": "{{ .SuburbName }}"}'>
+        hx-target="#streets-container" hx-select="#streets-container" hx-swap="outerHTML">
       {{ template "streets-list" . }}
     </div>
   </main>
