@@ -33,7 +33,7 @@ func main() {
 
 	mux := http.NewServeMux()
 
-	mux.Handle("/static", http.FileServer(http.Dir("static")))
+	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 
 	mux.HandleFunc("/", apiCfg.HandlerRoot)
 	mux.HandleFunc("/suburbs", apiCfg.HandlerSuburbs)
