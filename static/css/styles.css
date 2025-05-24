@@ -1,0 +1,13 @@
+@import "tailwindcss";
+
+@theme {
+  --font-satoshi: Satoshi, sans-serif;
+  --font-bevellier: Bevellier, sans-serif;
+
+  --color-graphite-200: hsl(50 3% 44%);
+  --color-graphite-500: hsl(46 10% 19%);
+
+  --color-grey-100: hsl(0 0 96%);
+  --color-grey-200: hsl(30 7% 92%);
+  --color-grey-300: hsl(30 2% 84%);
+}

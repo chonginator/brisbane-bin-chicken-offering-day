@@ -3,3 +3,5 @@ brisbane-bin-chicken-day
 /data
 .DS_Store
 node_modules
+.air.toml
+/tmp
