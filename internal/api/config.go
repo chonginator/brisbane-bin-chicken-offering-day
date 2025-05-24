@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"html/template"
+	"io/fs"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -70,24 +71,28 @@ func toNameFromSlug(slug string) string {
 }
 
 func parseTemplates() (*template.Template, error) {
-	pages, err := filepath.Glob("templates/pages/*.html")
+	var templateFilepaths []string
+	err := filepath.WalkDir("templates", func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if !d.IsDir() && filepath.Ext(path) == ".html" {
+			templateFilepaths = append(templateFilepaths, path)
+		}
+		return nil
+	})
 	if err != nil {
-		return nil, fmt.Errorf("error finding page templates: %w", err)
+		return nil, fmt.Errorf("error parsing component templates: %w", err)
 	}
 
-	tmpl, err := template.ParseFiles(pages...)
-	if err != nil {
-		return nil, fmt.Errorf("error parsing page template: %w", err)
+	fmt.Println("Parsing template files:")
+	for _, templateFilepath := range templateFilepaths {
+		fmt.Println(templateFilepath)
 	}
 
-	partials, err := filepath.Glob("templates/partials/*.html")
+	tmpl, err := template.ParseFiles(templateFilepaths...)
 	if err != nil {
-		return nil, fmt.Errorf("error finding partial templates: %w", err)
-	}
-
-	tmpl, err = tmpl.ParseFiles(partials...)
-	if err != nil {
-		return nil, fmt.Errorf("error parsing partial templates: %w", err)
+		return nil, fmt.Errorf("error parsing templates: %w", err)
 	}
 
 	return tmpl, nil
