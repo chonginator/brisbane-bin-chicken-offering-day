@@ -6,17 +6,6 @@ function combobox(tree = document) {
 
     const isOpen = () => !listbox.hidden
 
-    function toggleCombobox(open = !isOpen()) {
-      console.log(`toggle combobox to: ${open}`)
-      if (open) {
-        listbox.hidden = false
-        combobox.setAttribute("aria-expanded", true)
-      } else {
-        listbox.hidden = true
-        combobox.setAttribute("aria-expanded", false)
-      }
-    }
-
     comboboxRoot.addEventListener("focus", e => {
       toggleCombobox(true)
     }, { capture: true })
@@ -28,6 +17,20 @@ function combobox(tree = document) {
     }, { capture: true })
     
     toggleCombobox(isOpen())
+
+    function toggleCombobox(open = !isOpen()) {
+      if (open) {
+        listbox.hidden = false
+        combobox.setAttribute("aria-expanded", true)
+      } else {
+        listbox.hidden = true
+        combobox.setAttribute("aria-expanded", false)
+      }
+    }
+
+    function selectOption(option = options[0]) {
+      option.focus()
+    }
   })
 }
 

@@ -17,18 +17,18 @@
       hx-select="[role=listbox] > [role=option]" hx-swap="innerHTML"
       class="font-satoshi font-normal text-base lg:text-xl text-graphite-200 w-full bg-white focus-within:outline-none [&::-webkit-search-cancel-button]:hidden"
       autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-activedescendant
-      aria-labelledby="address-search-label">
+      aria-controls="listbox" aria-labelledby="address-search-label">
   </form>
-  <ul class="invisible peer-focus-within:visible" role="listbox" hidden>
-    <li
-      class="flex flex-col max-h-[232px] lg:max-h-[272px] p-4 overflow-y-auto bg-white border-2 border-grey-200 rounded-lg shadow-md"
-      role="option">
-      {{ range .Suburbs }}
+  <ul id="listbox"
+    class="invisible peer-focus-within:visible flex flex-col max-h-[232px] lg:max-h-[272px] p-4 overflow-y-auto bg-white border-2 border-grey-200 rounded-lg shadow-md"
+    role="listbox" hidden>
+    {{ range .Suburbs }}
+    <li class="flex w-full" role="option">
       <a href="/suburbs/{{ .Slug }}/streets" hx-target="#main" hx-select="#main"
-        class="font-satoshi text-base lg:text-xl text-graphite-500 px-8 lg:px-10 py-2 lg:py-4 hover:bg-grey-100 transition-colors rounded-sm">{{
+        class="font-satoshi text-base lg:text-xl text-graphite-500 w-full px-8 lg:px-10 py-2 lg:py-4 hover:bg-grey-100 transition-colors rounded-sm">{{
         .Name }}</a>
-      {{ end }}
     </li>
+    {{ end }}
   </ul>
 </div>
 {{ end }}
