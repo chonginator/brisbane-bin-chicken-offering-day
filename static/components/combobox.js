@@ -28,8 +28,17 @@ function combobox(tree = document) {
       }
     }
 
+    options.forEach(option => {
+      option.addEventListener("mouseover", () => {
+        selectOption(option)
+      })
+    })
+
     function selectOption(option = options[0]) {
-      option.focus()
+      combobox.setAttribute("aria-activedescendant", option.id)
+      const unselectedOptions = options.filter(o => !Object.is(o, option))
+      unselectedOptions.forEach(o => o.setAttribute("aria-selected", false))
+      option.setAttribute("aria-selected", true)
     }
   })
 }
