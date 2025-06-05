@@ -7,9 +7,7 @@ function combobox(tree = document) {
     const controller = new AbortController()
     const signal = controller.signal
 
-    listbox.addEventListener("htmx:beforeSwap", () => {
-      controller.abort()
-    })
+    let isArrowNavigating = false
 
     const isOpen = () => !listbox.hidden
     
@@ -17,38 +15,41 @@ function combobox(tree = document) {
 
     comboboxRoot.addEventListener("focus", e => {
       toggleCombobox(true)
-    }, { capture: true, signal: signal })
+    }, { capture: true, signal })
 
     comboboxRoot.addEventListener("blur", e => {
       if (!comboboxRoot.contains(document.activeElement)) {
         toggleCombobox(false)
       }
-    }, { capture: true, signal: signal })
+    }, { capture: true, signal })
 
     comboboxRoot.addEventListener("keydown", e => {
-      switch (e.key) {
-        case "ArrowDown": {
-          const nextOptionIndex = getSelectedOptionIndex() === options.length - 1 ? 0 : getSelectedOptionIndex() + 1
-          const nextOption = options.at(nextOptionIndex)
-          selectOption(nextOption)
-          nextOption.scrollIntoView({ block: "nearest", inline: "nearest" })
-          break
-        }
-        case "ArrowUp": {
-          const prevOption = options.at(getSelectedOptionIndex() - 1)
-          selectOption(prevOption)
-          prevOption.scrollIntoView({ block: "nearest", inline: "nearest" })
-          break
-        }
+      if (e.key == "ArrowDown" || e.key == "ArrowUp") {
+        isArrowNavigating = true
+        listbox.classList.add("pointer-events-none")
+
+        const nextOptionIndex = e.key == "ArrowUp" ? getSelectedOptionIndex() - 1 : (getSelectedOptionIndex() + 1) % options.length
+        const nextOption = options.at(nextOptionIndex)
+        selectOption(nextOption)
+        nextOption.scrollIntoView({ block: "nearest", inline: "nearest" })
+        setTimeout(() => {
+          isArrowNavigating = false
+          listbox.classList.remove("pointer-events-none")
+        }, 100)
       }
-    }, { signal: signal })
+
+    }, { signal })
+
+    listbox.addEventListener("htmx:beforeSwap", () => {
+      controller.abort()
+    })
 
     listbox.addEventListener("mouseover", e => {
       const option = e.target.closest("[role=option]")
       if (option) {
         selectOption(option)
       }
-    }, { signal: signal })
+    }, { signal })
 
     toggleCombobox(isOpen())
 
