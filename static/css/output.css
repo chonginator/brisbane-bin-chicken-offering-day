@@ -191,6 +191,9 @@
   .pointer-events-none {
     pointer-events: none;
   }
+  .collapse {
+    visibility: collapse;
+  }
   .invisible {
     visibility: hidden;
   }
@@ -204,6 +207,9 @@
     clip: rect(0, 0, 0, 0);
     white-space: nowrap;
     border-width: 0;
+  }
+  .absolute {
+    position: absolute;
   }
   .static {
     position: static;
@@ -256,6 +262,12 @@
   .max-w-4xl {
     max-width: var(--container-4xl);
   }
+  .grow {
+    flex-grow: 1;
+  }
+  .transform {
+    transform: var(--tw-rotate-x) var(--tw-rotate-y) var(--tw-rotate-z) var(--tw-skew-x) var(--tw-skew-y);
+  }
   .resize {
     resize: both;
   }
@@ -274,6 +286,11 @@
   .gap-5 {
     gap: calc(var(--spacing) * 5);
   }
+  .truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
   .overflow-y-auto {
     overflow-y: auto;
   }
@@ -290,6 +307,9 @@
   .border-grey-200 {
     border-color: var(--color-grey-200);
   }
+  .bg-grey-100 {
+    background-color: var(--color-grey-100);
+  }
   .bg-white {
     background-color: var(--color-white);
   }
@@ -304,6 +324,9 @@
   }
   .p-4 {
     padding: calc(var(--spacing) * 4);
+  }
+  .p-9 {
+    padding: calc(var(--spacing) * 9);
   }
   .px-5 {
     padding-inline: calc(var(--spacing) * 5);
@@ -380,6 +403,10 @@
     transition-timing-function: var(--tw-ease, var(--default-transition-timing-function));
     transition-duration: var(--tw-duration, var(--default-transition-duration));
   }
+  .duration-1000 {
+    --tw-duration: 1000ms;
+    transition-duration: 1000ms;
+  }
   .group-aria-selected\:bg-grey-100 {
     &:is(:where(.group)[aria-selected="true"] *) {
       background-color: var(--color-grey-100);
@@ -405,6 +432,29 @@
     &:hover {
       @media (hover: hover) {
         background-color: var(--color-grey-100);
+      }
+    }
+  }
+  .hover\:transition-colors {
+    &:hover {
+      @media (hover: hover) {
+        transition-property: color, background-color, border-color, outline-color, text-decoration-color, fill, stroke, --tw-gradient-from, --tw-gradient-via, --tw-gradient-to;
+        transition-timing-function: var(--tw-ease, var(--default-transition-timing-function));
+        transition-duration: var(--tw-duration, var(--default-transition-duration));
+      }
+    }
+  }
+  .aria-selected\:bg-grey-100 {
+    &[aria-selected="true"] {
+      background-color: var(--color-grey-100);
+    }
+  }
+  .hover\:aria-selected\:bg-grey-100 {
+    &:hover {
+      @media (hover: hover) {
+        &[aria-selected="true"] {
+          background-color: var(--color-grey-100);
+        }
       }
     }
   }
@@ -472,6 +522,31 @@
       display: none;
     }
   }
+}
+@property --tw-rotate-x {
+  syntax: "*";
+  inherits: false;
+  initial-value: rotateX(0);
+}
+@property --tw-rotate-y {
+  syntax: "*";
+  inherits: false;
+  initial-value: rotateY(0);
+}
+@property --tw-rotate-z {
+  syntax: "*";
+  inherits: false;
+  initial-value: rotateZ(0);
+}
+@property --tw-skew-x {
+  syntax: "*";
+  inherits: false;
+  initial-value: skewX(0);
+}
+@property --tw-skew-y {
+  syntax: "*";
+  inherits: false;
+  initial-value: skewY(0);
 }
 @property --tw-border-style {
   syntax: "*";
@@ -579,6 +654,10 @@
   inherits: false;
 }
 @property --tw-drop-shadow {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-duration {
   syntax: "*";
   inherits: false;
 }
