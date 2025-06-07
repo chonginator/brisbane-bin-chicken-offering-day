@@ -24,20 +24,25 @@ function combobox(tree = document) {
     }, { capture: true, signal })
 
     comboboxRoot.addEventListener("keydown", e => {
-      if (e.key == "ArrowDown" || e.key == "ArrowUp") {
-        isArrowNavigating = true
-        listbox.classList.add("pointer-events-none")
-
-        const nextOptionIndex = e.key == "ArrowUp" ? getSelectedOptionIndex() - 1 : (getSelectedOptionIndex() + 1) % options.length
-        const nextOption = options.at(nextOptionIndex)
-        selectOption(nextOption)
-        nextOption.scrollIntoView({ block: "nearest", inline: "nearest" })
-        setTimeout(() => {
-          isArrowNavigating = false
-          listbox.classList.remove("pointer-events-none")
-        }, 100)
+      switch (e.key) {
+        case "ArrowDown":
+        case "ArrowUp":
+          isArrowNavigating = true
+          listbox.classList.add("pointer-events-none")
+    
+          const nextOptionIndex = e.key == "ArrowUp" ? getSelectedOptionIndex() - 1 : (getSelectedOptionIndex() + 1) % options.length
+          const nextOption = options.at(nextOptionIndex)
+          selectOption(nextOption)
+          nextOption.scrollIntoView({ block: "nearest", inline: "nearest" })
+          setTimeout(() => {
+            isArrowNavigating = false
+            listbox.classList.remove("pointer-events-none")
+          }, 100)
+          break
+        case "Escape":
+          toggleCombobox(false)
+          break
       }
-
     }, { signal })
 
     listbox.addEventListener("htmx:beforeSwap", () => {
@@ -56,11 +61,14 @@ function combobox(tree = document) {
     function toggleCombobox(open = !isOpen()) {
       if (open) {
         listbox.hidden = false
+        combobox.focus()
         combobox.setAttribute("aria-expanded", true)
         selectOption(options[0])
       } else {
         listbox.hidden = true
+        combobox.blur()
         combobox.setAttribute("aria-expanded", false)
+        deselectAllOptions()
       }
     }
 
@@ -71,6 +79,13 @@ function combobox(tree = document) {
       unselectedOptions.forEach(o => o.setAttribute("aria-selected", false))
 
       option.setAttribute("aria-selected", true)
+    }
+
+    function deselectAllOptions() {
+      combobox.removeAttribute("aria-activedescendant")
+      options.forEach(o => {
+        o.setAttribute("aria-selected", false)
+      })
     }
   })
 }
