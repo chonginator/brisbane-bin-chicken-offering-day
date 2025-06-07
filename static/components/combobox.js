@@ -11,8 +11,6 @@ function combobox(tree = document) {
 
     const isOpen = () => !listbox.hidden
     
-    const getSelectedOptionIndex = () => options.findIndex(option => option.getAttribute("aria-selected") === "true")
-
     comboboxRoot.addEventListener("focus", e => {
       toggleCombobox(true)
     }, { capture: true, signal })
@@ -73,12 +71,18 @@ function combobox(tree = document) {
     }
 
     function selectOption(option = options[0]) {
+      deselectAllOptions()
       combobox.setAttribute("aria-activedescendant", option.id)
-
-      const unselectedOptions = options.filter(o => !Object.is(o, option))
-      unselectedOptions.forEach(o => o.setAttribute("aria-selected", false))
-
       option.setAttribute("aria-selected", true)
+    }
+    
+    function getSelectedOptionIndex() {
+      const activeOptionId = combobox.getAttribute("aria-activedescendant")
+      console.log(activeOptionId)
+      if (!activeOptionId) {
+        return null
+      }
+      return options.findIndex(o => o.getAttribute("id") === activeOptionId)
     }
 
     function deselectAllOptions() {
