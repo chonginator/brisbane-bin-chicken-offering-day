@@ -214,24 +214,6 @@
   .static {
     position: static;
   }
-  .container {
-    width: 100%;
-    @media (width >= 40rem) {
-      max-width: 40rem;
-    }
-    @media (width >= 48rem) {
-      max-width: 48rem;
-    }
-    @media (width >= 64rem) {
-      max-width: 64rem;
-    }
-    @media (width >= 80rem) {
-      max-width: 80rem;
-    }
-    @media (width >= 96rem) {
-      max-width: 96rem;
-    }
-  }
   .mx-auto {
     margin-inline: auto;
   }
@@ -306,9 +288,6 @@
   }
   .border-grey-200 {
     border-color: var(--color-grey-200);
-  }
-  .bg-grey-100 {
-    background-color: var(--color-grey-100);
   }
   .bg-white {
     background-color: var(--color-white);
@@ -393,6 +372,10 @@
     --tw-blur: blur(8px);
     filter: var(--tw-blur,) var(--tw-brightness,) var(--tw-contrast,) var(--tw-grayscale,) var(--tw-hue-rotate,) var(--tw-invert,) var(--tw-saturate,) var(--tw-sepia,) var(--tw-drop-shadow,);
   }
+  .blur\! {
+    --tw-blur: blur(8px) !important;
+    filter: var(--tw-blur,) var(--tw-brightness,) var(--tw-contrast,) var(--tw-grayscale,) var(--tw-hue-rotate,) var(--tw-invert,) var(--tw-saturate,) var(--tw-sepia,) var(--tw-drop-shadow,) !important;
+  }
   .transition {
     transition-property: color, background-color, border-color, outline-color, text-decoration-color, fill, stroke, --tw-gradient-from, --tw-gradient-via, --tw-gradient-to, opacity, box-shadow, transform, translate, scale, rotate, filter, -webkit-backdrop-filter, backdrop-filter;
     transition-timing-function: var(--tw-ease, var(--default-transition-timing-function));
@@ -402,15 +385,6 @@
     transition-property: color, background-color, border-color, outline-color, text-decoration-color, fill, stroke, --tw-gradient-from, --tw-gradient-via, --tw-gradient-to;
     transition-timing-function: var(--tw-ease, var(--default-transition-timing-function));
     transition-duration: var(--tw-duration, var(--default-transition-duration));
-  }
-  .duration-1000 {
-    --tw-duration: 1000ms;
-    transition-duration: 1000ms;
-  }
-  .group-aria-selected\:bg-grey-100 {
-    &:is(:where(.group)[aria-selected="true"] *) {
-      background-color: var(--color-grey-100);
-    }
   }
   .peer-focus-within\:visible {
     &:is(:where(.peer):focus-within ~ *) {
@@ -435,27 +409,9 @@
       }
     }
   }
-  .hover\:transition-colors {
-    &:hover {
-      @media (hover: hover) {
-        transition-property: color, background-color, border-color, outline-color, text-decoration-color, fill, stroke, --tw-gradient-from, --tw-gradient-via, --tw-gradient-to;
-        transition-timing-function: var(--tw-ease, var(--default-transition-timing-function));
-        transition-duration: var(--tw-duration, var(--default-transition-duration));
-      }
-    }
-  }
   .aria-selected\:bg-grey-100 {
     &[aria-selected="true"] {
       background-color: var(--color-grey-100);
-    }
-  }
-  .hover\:aria-selected\:bg-grey-100 {
-    &:hover {
-      @media (hover: hover) {
-        &[aria-selected="true"] {
-          background-color: var(--color-grey-100);
-        }
-      }
     }
   }
   .lg\:max-h-\[272px\] {
@@ -654,10 +610,6 @@
   inherits: false;
 }
 @property --tw-drop-shadow {
-  syntax: "*";
-  inherits: false;
-}
-@property --tw-duration {
   syntax: "*";
   inherits: false;
 }

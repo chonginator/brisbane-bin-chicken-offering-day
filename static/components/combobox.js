@@ -59,6 +59,7 @@ function combobox(tree = document) {
     function toggleCombobox(open = !isOpen()) {
       if (open) {
         listbox.hidden = false
+        listbox.scrollTop = 0
         combobox.focus()
         combobox.setAttribute("aria-expanded", true)
         selectOption(options[0])
@@ -78,7 +79,6 @@ function combobox(tree = document) {
     
     function getSelectedOptionIndex() {
       const activeOptionId = combobox.getAttribute("aria-activedescendant")
-      console.log(activeOptionId)
       if (!activeOptionId) {
         return null
       }
