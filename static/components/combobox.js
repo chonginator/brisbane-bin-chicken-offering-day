@@ -28,14 +28,26 @@ function combobox(tree = document) {
           isArrowNavigating = true
           listbox.classList.add("pointer-events-none")
     
-          const nextOptionIndex = e.key == "ArrowUp" ? getSelectedOptionIndex() - 1 : (getSelectedOptionIndex() + 1) % options.length
-          const nextOption = options.at(nextOptionIndex)
+          const nextIndex = e.key == "ArrowUp" ? getSelectedOptionIndex() - 1 : (getSelectedOptionIndex() + 1) % options.length
+          const nextOption = options.at(nextIndex)
           selectOption(nextOption)
           nextOption.scrollIntoView({ block: "nearest", inline: "nearest" })
           setTimeout(() => {
             isArrowNavigating = false
             listbox.classList.remove("pointer-events-none")
           }, 100)
+          break
+        case "Enter":
+          const selectedIndex = getSelectedOptionIndex()
+          if (selectedIndex === null) {
+            break
+          }
+          const selectedOption = options[selectedIndex]
+          const linkEl = selectedOption.querySelector("a")
+          if (linkEl) {
+            linkEl.click()
+            toggleCombobox(false)
+          }
           break
         case "Escape":
           toggleCombobox(false)
