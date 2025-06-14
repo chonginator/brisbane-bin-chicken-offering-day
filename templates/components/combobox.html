@@ -13,8 +13,8 @@
       <span class="sr-only">Search For Your Address</span>
     </label>
     <input id="address-search" type="search" name="q" value="{{ .Query }}" placeholder="Search addresses..."
-      hx-get="/suburbs" hx-trigger="input changed delay:500ms" hx-target="[role=listbox]"
-      hx-select="[role=listbox] > [role=option]" hx-swap="innerHTML"
+      hx-get="/search" hx-trigger="input changed delay:500ms" hx-target="[role=listbox]" hx-select="[role=option]"
+      hx-swap="innerHTML"
       class="font-satoshi font-normal text-base lg:text-xl text-graphite-200 w-full bg-white focus-within:outline-none [&::-webkit-search-cancel-button]:hidden"
       autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-activedescendant
       aria-controls="listbox" aria-labelledby="address-search-label">

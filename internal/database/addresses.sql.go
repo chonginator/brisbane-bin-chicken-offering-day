@@ -204,3 +204,85 @@ func (q *Queries) GetCollectionSchedulesByPropertyID(ctx context.Context, proper
 	}
 	return items, nil
 }
+
+const searchAddresses = `-- name: SearchAddresses :many
+WITH address_data AS (
+  SELECT 
+    a.property_id,
+    a.collection_day,
+    a.zone,
+    CAST(
+      CASE 
+        WHEN a.unit_number IS NOT NULL AND a.unit_number != '' 
+        THEN a.unit_number || '/' || a.house_number 
+        ELSE a.house_number 
+      END || 
+      CASE 
+        WHEN a.house_number_suffix IS NOT NULL AND a.house_number_suffix != '' 
+        THEN a.house_number_suffix 
+        ELSE '' 
+      END || ' ' || s.name || ', ' || sub.name
+    AS VARCHAR) AS formatted_address
+  FROM addresses a
+  JOIN streets s ON a.street_id = s.id
+  JOIN suburbs sub ON s.suburb_id = sub.id
+  WHERE 
+    (
+      COALESCE(a.unit_number, '') || 
+      '/' ||
+      COALESCE(a.house_number, '') || 
+      COALESCE(a.house_number_suffix, '') || 
+      ' ' ||
+      s.name || 
+      ', ' ||
+      sub.name
+    ) LIKE LOWER('%' || ?2 || '%')
+)
+SELECT 
+  property_id,
+  collection_day,
+  zone,
+  formatted_address
+FROM address_data
+LIMIT ?1
+`
+
+type SearchAddressesParams struct {
+	Limit int64
+	Query sql.NullString
+}
+
+type SearchAddressesRow struct {
+	PropertyID       string
+	CollectionDay    string
+	Zone             string
+	FormattedAddress string
+}
+
+func (q *Queries) SearchAddresses(ctx context.Context, arg SearchAddressesParams) ([]SearchAddressesRow, error) {
+	rows, err := q.db.QueryContext(ctx, searchAddresses, arg.Limit, arg.Query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []SearchAddressesRow
+	for rows.Next() {
+		var i SearchAddressesRow
+		if err := rows.Scan(
+			&i.PropertyID,
+			&i.CollectionDay,
+			&i.Zone,
+			&i.FormattedAddress,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
