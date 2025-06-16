@@ -3,6 +3,7 @@ function combobox(tree = document) {
     const combobox = comboboxRoot.querySelector("[role=combobox]")
     const listbox = comboboxRoot.querySelector("[role=listbox]")
     const options = [...listbox.querySelectorAll("[role=option]")]
+    const dropdownContent = comboboxRoot.querySelector("#dropdown-content")
 
     const controller = new AbortController()
     const signal = controller.signal
@@ -55,8 +56,12 @@ function combobox(tree = document) {
       }
     }, { signal })
 
-    listbox.addEventListener("htmx:beforeSwap", () => {
+    comboboxRoot.addEventListener("htmx:beforeSwap", () => {
       controller.abort()
+    })
+
+    comboboxRoot.addEventListener("htmx:beforeRequest", () => {
+      dropdownContent.setAttribute("hidden", true)
     })
 
     listbox.addEventListener("mouseover", e => {
@@ -69,6 +74,9 @@ function combobox(tree = document) {
     toggleCombobox(isOpen())
 
     function toggleCombobox(open = !isOpen()) {
+      if (options.length == 0) {
+        return
+      }
       if (open) {
         listbox.hidden = false
         listbox.scrollTop = 0

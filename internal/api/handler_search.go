@@ -17,6 +17,7 @@ type SearchData struct {
 func (cfg *Config) HandlerSearch(w http.ResponseWriter, r *http.Request) {
 	queryString := r.URL.Query().Get("q")
 	if queryString == "" {
+		cfg.respondWithHTML(w, "placeholder_results.html", nil)
 		return
 	}
 	query := sql.NullString{
@@ -34,7 +35,7 @@ func (cfg *Config) HandlerSearch(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if len(dbAddresses) == 0 {
-		cfg.respondWithHTML(w, "no_results_addresses_list.html", SearchData{
+		cfg.respondWithHTML(w, "no_results.html", SearchData{
 			Query: query.String,
 		})
 	}

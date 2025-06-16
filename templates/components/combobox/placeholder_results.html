@@ -1,0 +1,11 @@
+{{ define "placeholder_results" }}
+<div id="dropdown-content">
+  <ul id="listbox" role="listbox" hidden></ul>
+  <div id="message-container"
+    class="font-satoshi text-base lg:text-xl text-graphite-200 flex w-full px-8 lg:px-10 py-2 lg:py-4 scroll-my-2 rounded-sm">
+    Type your address to search
+  </div>
+</div>
+{{ end }}
+
+{{ template "placeholder_results" . }}
