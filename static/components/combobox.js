@@ -60,10 +60,6 @@ function combobox(tree = document) {
       controller.abort()
     })
 
-    comboboxRoot.addEventListener("htmx:beforeRequest", () => {
-      dropdownContent.setAttribute("hidden", true)
-    })
-
     listbox.addEventListener("mouseover", e => {
       const option = e.target.closest("[role=option]")
       if (option) {
