@@ -2,7 +2,9 @@ package api
 
 import (
 	"context"
+	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/chonginator/brisbane-bin-chicken-offering-day/internal/database"
 	"github.com/chonginator/brisbane-bin-chicken-offering-day/internal/resource"
@@ -20,9 +22,11 @@ func (cfg *Config) HandlerAddresses(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	safeQuery := strings.ReplaceAll(query, `"`, `""`)
+	ftsQuery := fmt.Sprintf("\"%s\"*", safeQuery)
 	dbAddresses, err := cfg.db.SearchAddresses(context.Background(), database.SearchAddressesParams{
 		Limit: 10,
-		Query: query + "*",
+		Query: ftsQuery,
 	})
 	if err != nil {
 		cfg.respondWithError(w, http.StatusInternalServerError, "failed to search addresses", err)
