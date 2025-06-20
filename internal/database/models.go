@@ -24,6 +24,11 @@ type Address struct {
 	Zone              string
 }
 
+type AddressSearch struct {
+	PropertyID string
+	SearchText string
+}
+
 type BinCollectionWeek struct {
 	ID            uuid.UUID
 	CreatedAt     time.Time

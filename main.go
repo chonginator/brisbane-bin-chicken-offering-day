@@ -32,16 +32,9 @@ func main() {
 	}
 
 	mux := http.NewServeMux()
-
-	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
-
 	mux.HandleFunc("/", apiCfg.HandlerRoot)
-	mux.HandleFunc("/suburbs", apiCfg.HandlerSuburbs)
-	mux.HandleFunc("/suburbs/{suburb}/streets", apiCfg.HandlerStreets)
-	mux.HandleFunc("/suburbs/{suburb}/streets/{street}/addresses", apiCfg.HandlerAddresses)
-	mux.HandleFunc("/suburbs/{suburb}/streets/{street}/addresses/{property_id}/collections", apiCfg.HandlerCollections)
-
-	mux.HandleFunc("/search", apiCfg.HandlerSearch)
+	mux.HandleFunc("/addresses", apiCfg.HandlerAddresses)
+	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 
 	srv := &http.Server{
 		Addr:         ":" + port,

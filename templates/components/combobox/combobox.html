@@ -16,7 +16,7 @@
       <span id="address-search-label" class="sr-only">Search For Your Address</span>
     </label>
     <input id="address-search" type="search" name="q" value="{{ .Query }}" placeholder="Search addresses..."
-      hx-get="/search" hx-trigger="input changed delay:500ms" hx-target="#dropdown-content" hx-swap="outerHTML"
+      hx-get="/addresses" hx-trigger="input changed delay:500ms" hx-target="#dropdown-content" hx-swap="outerHTML"
       hx-indicator="#loading"
       class="font-satoshi font-normal text-base lg:text-xl text-graphite-200 w-full bg-white focus-within:outline-none [&::-webkit-search-cancel-button]:hidden"
       autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-activedescendant
