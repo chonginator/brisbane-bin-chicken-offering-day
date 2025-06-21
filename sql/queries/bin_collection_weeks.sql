@@ -1,4 +1,4 @@
--- name: CreateBinCollectionWeek :one
+-- name: CreateCollectionWeek :one
 INSERT INTO bin_collection_weeks (
   id,
   created_at,
@@ -15,9 +15,9 @@ VALUES (
 )
 RETURNING *;
 
--- name: GetZoneForCurrentWeek :one
+-- name: GetNextCollectionWeek :one
 SELECT zone, week_start_date
 FROM bin_collection_weeks
-WHERE week_start_date <= DATE('now', 'utc')
-ORDER BY week_start_date DESC
+WHERE week_start_date >= DATETIME('now', 'utc')
+ORDER BY week_start_date ASC
 LIMIT 1;

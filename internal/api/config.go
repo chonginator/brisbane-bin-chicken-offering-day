@@ -1,24 +1,20 @@
 package api
 
 import (
-	"context"
 	"database/sql"
 	"fmt"
 	"html/template"
 	"io/fs"
 	"path/filepath"
-	"sort"
 	"strings"
 
 	"github.com/chonginator/brisbane-bin-chicken-offering-day/internal/database"
-	"github.com/chonginator/brisbane-bin-chicken-offering-day/internal/resource"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 )
 
 type Config struct {
 	db        *database.Queries
-	suburbs   []resource.Resource
 	templates *template.Template
 }
 
@@ -30,22 +26,9 @@ func NewAPIConfig(dbURL string) (*Config, error) {
 
 	dbQueries := database.New(db)
 
-	dbSuburbs, err := dbQueries.GetSuburbs(context.Background())
 	if err != nil {
 		return nil, fmt.Errorf("error getting suburbs from database: %w", err)
 	}
-
-	suburbs := make([]resource.Resource, 0, len(dbSuburbs))
-	for _, suburb := range dbSuburbs {
-		suburbs = append(suburbs, resource.Resource{
-			Name: suburb.Name,
-			Slug: toSlugFromName(suburb.Name),
-		})
-	}
-
-	sort.Slice(suburbs, func(i, j int) bool {
-		return suburbs[i].Name < suburbs[j].Name
-	})
 
 	templates, err := parseTemplates()
 	if err != nil {
@@ -54,7 +37,6 @@ func NewAPIConfig(dbURL string) (*Config, error) {
 
 	apiCfg := &Config{
 		db:        dbQueries,
-		suburbs:   suburbs,
 		templates: templates,
 	}
 

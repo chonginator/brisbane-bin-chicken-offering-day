@@ -11,34 +11,34 @@ import (
 	"github.com/google/uuid"
 )
 
-type BinCollectionWeek struct {
+type CollectionWeek struct {
 	WeekStarting string `json:"week_starting"`
 	Zone         string `json:"zone"`
 }
 
-func seedBinCollectionWeeks(dbQueries *database.Queries, filepath string) error {
+func seedCollectionWeeks(dbQueries *database.Queries, filepath string) error {
 	data, err := os.Open(filepath)
 	if err != nil {
 		return err
 	}
 	defer data.Close()
 
-	binCollectionWeeks := []BinCollectionWeek{}
+	collectionWeeks := []CollectionWeek{}
 	decoder := json.NewDecoder(data)
-	err = decoder.Decode(&binCollectionWeeks)
+	err = decoder.Decode(&collectionWeeks)
 	if err != nil {
 		return err
 	}
 
-	for _, record := range binCollectionWeeks {
+	for _, record := range collectionWeeks {
 		weekStarting, err := time.Parse(time.DateOnly, record.WeekStarting)
 		if err != nil {
 			return fmt.Errorf("couldn't parse bin collection week starting: %w", err)
 		}
 
-		_, err = dbQueries.CreateBinCollectionWeek(context.Background(), database.CreateBinCollectionWeekParams{
+		_, err = dbQueries.CreateCollectionWeek(context.Background(), database.CreateCollectionWeekParams{
 			ID:            uuid.New(),
-			WeekStartDate: weekStarting.String(),
+			WeekStartDate: weekStarting,
 			Zone:          record.Zone,
 		})
 

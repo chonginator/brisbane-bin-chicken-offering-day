@@ -12,7 +12,7 @@ import (
 
 type SearchData struct {
 	Addresses []resource.Resource
-	Query string
+	Query     string
 }
 
 func (cfg *Config) HandlerAddresses(w http.ResponseWriter, r *http.Request) {

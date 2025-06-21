@@ -7,11 +7,12 @@ package database
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
 )
 
-const createBinCollectionWeek = `-- name: CreateBinCollectionWeek :one
+const createCollectionWeek = `-- name: CreateCollectionWeek :one
 INSERT INTO bin_collection_weeks (
   id,
   created_at,
@@ -29,14 +30,14 @@ VALUES (
 RETURNING id, created_at, updated_at, week_start_date, zone
 `
 
-type CreateBinCollectionWeekParams struct {
+type CreateCollectionWeekParams struct {
 	ID            uuid.UUID
-	WeekStartDate string
+	WeekStartDate time.Time
 	Zone          string
 }
 
-func (q *Queries) CreateBinCollectionWeek(ctx context.Context, arg CreateBinCollectionWeekParams) (BinCollectionWeek, error) {
-	row := q.db.QueryRowContext(ctx, createBinCollectionWeek, arg.ID, arg.WeekStartDate, arg.Zone)
+func (q *Queries) CreateCollectionWeek(ctx context.Context, arg CreateCollectionWeekParams) (BinCollectionWeek, error) {
+	row := q.db.QueryRowContext(ctx, createCollectionWeek, arg.ID, arg.WeekStartDate, arg.Zone)
 	var i BinCollectionWeek
 	err := row.Scan(
 		&i.ID,
@@ -48,22 +49,22 @@ func (q *Queries) CreateBinCollectionWeek(ctx context.Context, arg CreateBinColl
 	return i, err
 }
 
-const getZoneForCurrentWeek = `-- name: GetZoneForCurrentWeek :one
+const getNextCollectionWeek = `-- name: GetNextCollectionWeek :one
 SELECT zone, week_start_date
 FROM bin_collection_weeks
-WHERE week_start_date <= DATE('now', 'utc')
-ORDER BY week_start_date DESC
+WHERE week_start_date >= DATETIME('now', 'utc')
+ORDER BY week_start_date ASC
 LIMIT 1
 `
 
-type GetZoneForCurrentWeekRow struct {
+type GetNextCollectionWeekRow struct {
 	Zone          string
-	WeekStartDate string
+	WeekStartDate time.Time
 }
 
-func (q *Queries) GetZoneForCurrentWeek(ctx context.Context) (GetZoneForCurrentWeekRow, error) {
-	row := q.db.QueryRowContext(ctx, getZoneForCurrentWeek)
-	var i GetZoneForCurrentWeekRow
+func (q *Queries) GetNextCollectionWeek(ctx context.Context) (GetNextCollectionWeekRow, error) {
+	row := q.db.QueryRowContext(ctx, getNextCollectionWeek)
+	var i GetNextCollectionWeekRow
 	err := row.Scan(&i.Zone, &i.WeekStartDate)
 	return i, err
 }

@@ -15,8 +15,12 @@
     --text-xl--line-height: calc(1.75 / 1.25);
     --text-2xl: 1.5rem;
     --text-2xl--line-height: calc(2 / 1.5);
+    --text-3xl: 1.875rem;
+    --text-3xl--line-height: calc(2.25 / 1.875);
     --text-4xl: 2.25rem;
     --text-4xl--line-height: calc(2.5 / 2.25);
+    --text-5xl: 3rem;
+    --text-5xl--line-height: 1;
     --text-8xl: 6rem;
     --text-8xl--line-height: 1;
     --font-weight-normal: 400;
@@ -218,23 +222,20 @@
   .static {
     position: static;
   }
-  .container {
-    width: 100%;
-    @media (width >= 40rem) {
-      max-width: 40rem;
-    }
-    @media (width >= 48rem) {
-      max-width: 48rem;
-    }
-    @media (width >= 64rem) {
-      max-width: 64rem;
-    }
-    @media (width >= 80rem) {
-      max-width: 80rem;
-    }
-    @media (width >= 96rem) {
-      max-width: 96rem;
-    }
+  .top-0 {
+    top: calc(var(--spacing) * 0);
+  }
+  .right-0 {
+    right: calc(var(--spacing) * 0);
+  }
+  .bottom-0 {
+    bottom: calc(var(--spacing) * 0);
+  }
+  .left-0 {
+    left: calc(var(--spacing) * 0);
+  }
+  .z-10 {
+    z-index: 10;
   }
   .mx-auto {
     margin-inline: auto;
@@ -269,6 +270,14 @@
   .grow {
     flex-grow: 1;
   }
+  .translate-y-\[calc\(100\%\+0\.5rem\)\] {
+    --tw-translate-y: calc(100% + 0.5rem);
+    translate: var(--tw-translate-x) var(--tw-translate-y);
+  }
+  .translate-y-full {
+    --tw-translate-y: 100%;
+    translate: var(--tw-translate-x) var(--tw-translate-y);
+  }
   .transform {
     transform: var(--tw-rotate-x) var(--tw-rotate-y) var(--tw-rotate-z) var(--tw-skew-x) var(--tw-skew-y);
   }
@@ -286,6 +295,9 @@
   }
   .items-center {
     align-items: center;
+  }
+  .justify-center {
+    justify-content: center;
   }
   .gap-2 {
     gap: calc(var(--spacing) * 2);
@@ -332,9 +344,6 @@
   .p-5 {
     padding: calc(var(--spacing) * 5);
   }
-  .p-9 {
-    padding: calc(var(--spacing) * 9);
-  }
   .px-5 {
     padding-inline: calc(var(--spacing) * 5);
   }
@@ -350,6 +359,9 @@
   .text-center {
     text-align: center;
   }
+  .text-left {
+    text-align: left;
+  }
   .font-bevellier {
     font-family: var(--font-bevellier);
   }
@@ -359,6 +371,14 @@
   .text-2xl {
     font-size: var(--text-2xl);
     line-height: var(--tw-leading, var(--text-2xl--line-height));
+  }
+  .text-3xl {
+    font-size: var(--text-3xl);
+    line-height: var(--tw-leading, var(--text-3xl--line-height));
+  }
+  .text-4xl {
+    font-size: var(--text-4xl);
+    line-height: var(--tw-leading, var(--text-4xl--line-height));
   }
   .text-\[40px\]\/none {
     font-size: 40px;
@@ -418,6 +438,11 @@
       visibility: visible;
     }
   }
+  .peer-has-aria-expanded\:visible {
+    &:is(:where(.peer):has(*[aria-expanded="true"]) ~ *) {
+      visibility: visible;
+    }
+  }
   .focus-within\:outline-graphite-500 {
     &:focus-within {
       outline-color: var(--color-graphite-500);
@@ -427,6 +452,13 @@
     &:focus-within {
       --tw-outline-style: none;
       outline-style: none;
+    }
+  }
+  .hover\:cursor-pointer {
+    &:hover {
+      @media (hover: hover) {
+        cursor: pointer;
+      }
     }
   }
   .hover\:bg-grey-100 {
@@ -444,6 +476,11 @@
   .lg\:max-h-\[272px\] {
     @media (width >= 64rem) {
       max-height: 272px;
+    }
+  }
+  .lg\:gap-2 {
+    @media (width >= 64rem) {
+      gap: calc(var(--spacing) * 2);
     }
   }
   .lg\:gap-4 {
@@ -488,6 +525,12 @@
       line-height: var(--tw-leading, var(--text-4xl--line-height));
     }
   }
+  .lg\:text-5xl {
+    @media (width >= 64rem) {
+      font-size: var(--text-5xl);
+      line-height: var(--tw-leading, var(--text-5xl--line-height));
+    }
+  }
   .lg\:text-8xl {
     @media (width >= 64rem) {
       font-size: var(--text-8xl);
@@ -525,6 +568,21 @@
       opacity: 0%;
     }
   }
+}
+@property --tw-translate-x {
+  syntax: "*";
+  inherits: false;
+  initial-value: 0;
+}
+@property --tw-translate-y {
+  syntax: "*";
+  inherits: false;
+  initial-value: 0;
+}
+@property --tw-translate-z {
+  syntax: "*";
+  inherits: false;
+  initial-value: 0;
 }
 @property --tw-rotate-x {
   syntax: "*";

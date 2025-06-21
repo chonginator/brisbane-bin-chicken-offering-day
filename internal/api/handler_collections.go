@@ -4,23 +4,27 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"time"
 )
 
 type Collection struct {
-	Day         string
-	BinWeekType BinWeekType
+	Date    string
+	Message string
 }
 
 type CollectionsPageData struct {
-	Collections []Collection
+	Collection Collection
 }
 
-type BinWeekType string
-
-const (
-	YellowRecycling BinWeekType = "Yellow Recycling"
-	GreenWaste      BinWeekType = "Green Waste"
-)
+var weekdayMap = map[string]time.Weekday{
+	"Monday":    time.Monday,
+	"Tuesday":   time.Tuesday,
+	"Wednesday": time.Wednesday,
+	"Thursday":  time.Thursday,
+	"Friday":    time.Friday,
+	"Saturday":  time.Saturday,
+	"Sunday":    time.Sunday,
+}
 
 func (cfg *Config) HandlerCollections(w http.ResponseWriter, r *http.Request) {
 	propertyID := r.PathValue("property_id")
@@ -30,35 +34,33 @@ func (cfg *Config) HandlerCollections(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	dbCollections, err := cfg.db.GetCollectionSchedulesByPropertyID(context.Background(), propertyID)
+	collectionSchedule, err := cfg.db.GetCollectionScheduleByPropertyID(context.Background(), propertyID)
 	if err != nil {
 		err := fmt.Errorf("couldn't get addresses by property_id: %w", err)
 		cfg.respondWithError(w, http.StatusInternalServerError, "failed to fetch collections", err)
 	}
 
-	zoneForCurrentWeekRow, err := cfg.db.GetZoneForCurrentWeek(context.Background())
+	nextCollectionWeek, err := cfg.db.GetNextCollectionWeek(context.Background())
 	if err != nil {
-		err := fmt.Errorf("couldn't get zone for the current week: %w", err)
-		cfg.respondWithError(w, http.StatusInternalServerError, "failed to get zone for the current week", err)
+		err := fmt.Errorf("couldn't get the next collection week: %w", err)
+		cfg.respondWithError(w, http.StatusInternalServerError, "failed to get next collection week", err)
 	}
 
-	var binWeekType BinWeekType
-	if zoneForCurrentWeekRow.Zone == dbCollections[0].Zone {
-		binWeekType = YellowRecycling
+	dayDifference := weekdayMap[collectionSchedule.CollectionDay] - nextCollectionWeek.WeekStartDate.Weekday()
+	nextCollectionDate := nextCollectionWeek.WeekStartDate.AddDate(0, 0, int(dayDifference))
+
+	var message string
+	if nextCollectionWeek.Zone == collectionSchedule.Zone {
+		message = "General waste and yellow recycling bin day"
 	} else {
-		binWeekType = GreenWaste
-	}
-
-	collections := make([]Collection, len(dbCollections))
-	for i, collection := range dbCollections {
-		collections[i] = Collection{
-			Day:         collection.CollectionDay,
-			BinWeekType: binWeekType,
-		}
+		message = "General waste and green recycling bin day"
 	}
 
 	data := CollectionsPageData{
-		Collections: collections,
+		Collection: Collection{
+			Date:    nextCollectionDate.Format("Monday, 2 Jan 2006"),
+			Message: message,
+		},
 	}
 
 	cfg.respondWithHTML(w, "collections.html", data)

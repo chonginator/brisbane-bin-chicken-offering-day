@@ -171,38 +171,22 @@ func (q *Queries) GetAddressesByStreetName(ctx context.Context, name string) ([]
 	return items, nil
 }
 
-const getCollectionSchedulesByPropertyID = `-- name: GetCollectionSchedulesByPropertyID :many
+const getCollectionScheduleByPropertyID = `-- name: GetCollectionScheduleByPropertyID :one
 SELECT collection_day, zone
 FROM addresses
 WHERE property_id = ?1
 `
 
-type GetCollectionSchedulesByPropertyIDRow struct {
+type GetCollectionScheduleByPropertyIDRow struct {
 	CollectionDay string
 	Zone          string
 }
 
-func (q *Queries) GetCollectionSchedulesByPropertyID(ctx context.Context, propertyID string) ([]GetCollectionSchedulesByPropertyIDRow, error) {
-	rows, err := q.db.QueryContext(ctx, getCollectionSchedulesByPropertyID, propertyID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []GetCollectionSchedulesByPropertyIDRow
-	for rows.Next() {
-		var i GetCollectionSchedulesByPropertyIDRow
-		if err := rows.Scan(&i.CollectionDay, &i.Zone); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
+func (q *Queries) GetCollectionScheduleByPropertyID(ctx context.Context, propertyID string) (GetCollectionScheduleByPropertyIDRow, error) {
+	row := q.db.QueryRowContext(ctx, getCollectionScheduleByPropertyID, propertyID)
+	var i GetCollectionScheduleByPropertyIDRow
+	err := row.Scan(&i.CollectionDay, &i.Zone)
+	return i, err
 }
 
 const searchAddresses = `-- name: SearchAddresses :many

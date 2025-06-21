@@ -3,7 +3,6 @@ function combobox(tree = document) {
     const combobox = comboboxRoot.querySelector("[role=combobox]")
     const listbox = comboboxRoot.querySelector("[role=listbox]")
     const options = [...listbox.querySelectorAll("[role=option]")]
-    const dropdownContent = comboboxRoot.querySelector("#dropdown-content")
 
     const controller = new AbortController()
     const signal = controller.signal
@@ -17,9 +16,11 @@ function combobox(tree = document) {
     }, { capture: true, signal })
 
     comboboxRoot.addEventListener("blur", e => {
-      if (!comboboxRoot.contains(document.activeElement)) {
-        toggleCombobox(false)
-      }
+      const newFocusTarget = e.relatedTarget
+      if (newFocusTarget && comboboxRoot.contains(newFocusTarget)) {
+        return
+      } 
+      toggleCombobox(false)
     }, { capture: true, signal })
 
     comboboxRoot.addEventListener("keydown", e => {
@@ -74,13 +75,11 @@ function combobox(tree = document) {
         return
       }
       if (open) {
-        listbox.hidden = false
         listbox.scrollTop = 0
         combobox.focus()
         combobox.setAttribute("aria-expanded", true)
         selectOption(options[0])
       } else {
-        listbox.hidden = true
         combobox.blur()
         combobox.setAttribute("aria-expanded", false)
         deselectAllOptions()

@@ -1,7 +1,7 @@
 {{ define "combobox" }}
 <script src="/static/components/combobox.js"></script>
 
-<div id="combobox-container" class="flex flex-col gap-2" data-combobox>
+<div id="combobox-container" class="flex flex-col gap-2 relative" data-combobox>
   <form
     class="peer flex gap-2 lg:gap-4 w-full bg-white p-4 outline-2 outline-grey-300 focus-within:outline-graphite-500 rounded-lg">
     <label id="loading" class="flex items-center relative" for="address-search">
@@ -23,7 +23,8 @@
       aria-controls="listbox" aria-labelledby="address-search-label">
   </form>
   <div id="dropdown-container"
-    class="relative invisible peer-focus-within:visible flex flex-col max-h-[232px] lg:max-h-[272px] p-4 overflow-y-auto bg-white border-2 border-grey-200 rounded-lg shadow-md">
+    class="absolute bottom-0 left-0 right-0 translate-y-[calc(100%+0.5rem)] invisible peer-has-aria-expanded:visible flex flex-col max-h-[232px] lg:max-h-[272px] p-4 overflow-y-auto bg-white border-2 border-grey-200 rounded-lg shadow-md"
+    tabindex="1">
     {{ template "placeholder_results" }}
   </div>
 </div>

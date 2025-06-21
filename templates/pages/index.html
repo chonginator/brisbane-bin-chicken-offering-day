@@ -25,7 +25,7 @@
         overlords
         this week!</p>
     </header>
-    <main id="main">
+    <main class="flex flex-col gap-5 lg:gap-10">
       <div class="flex flex-col gap-5 lg:gap-6">
         <h2 class="font-bevellier font-semibold text-2xl lg:text-4xl uppercase text-graphite-500 text-center">Search For
           Your
@@ -33,6 +33,7 @@
         </h2>
         {{ template "combobox" . }}
       </div>
+      <div id="collections-container" class="flex flex-col items-center gap-2"></div>
     </main>
   </div>
 </body>

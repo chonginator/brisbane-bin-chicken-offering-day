@@ -34,6 +34,7 @@ func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", apiCfg.HandlerRoot)
 	mux.HandleFunc("/addresses", apiCfg.HandlerAddresses)
+	mux.HandleFunc("/collections/{property_id}", apiCfg.HandlerCollections)
 	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 
 	srv := &http.Server{
