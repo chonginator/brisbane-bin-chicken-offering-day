@@ -6,11 +6,8 @@ import (
 	"html/template"
 	"io/fs"
 	"path/filepath"
-	"strings"
 
 	"github.com/chonginator/brisbane-bin-chicken-offering-day/internal/database"
-	"golang.org/x/text/cases"
-	"golang.org/x/text/language"
 )
 
 type Config struct {
@@ -26,10 +23,6 @@ func NewAPIConfig(dbURL string) (*Config, error) {
 
 	dbQueries := database.New(db)
 
-	if err != nil {
-		return nil, fmt.Errorf("error getting suburbs from database: %w", err)
-	}
-
 	templates, err := parseTemplates()
 	if err != nil {
 		return nil, fmt.Errorf("error parsing templates: %w", err)
@@ -41,15 +34,6 @@ func NewAPIConfig(dbURL string) (*Config, error) {
 	}
 
 	return apiCfg, nil
-}
-
-func toSlugFromName(name string) string {
-	return strings.Join(strings.Split(strings.ToLower(name), " "), "-")
-}
-
-func toNameFromSlug(slug string) string {
-	caser := cases.Title(language.English)
-	return caser.String(strings.Join(strings.Split(slug, "-"), " "))
 }
 
 func parseTemplates() (*template.Template, error) {
