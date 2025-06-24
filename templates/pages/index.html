@@ -23,7 +23,7 @@
       <p class="font-satoshi font-normal text-base lg:text-2xl text-graphite-500">Discover what bins to offer our
         feathered
         overlords
-        this week!</p>
+        this coming week!</p>
     </header>
     <main class="flex flex-col gap-5 lg:gap-10">
       <div class="flex flex-col gap-5 lg:gap-6">
@@ -33,7 +33,13 @@
         </h2>
         {{ template "combobox" . }}
       </div>
-      <div id="collections-container" class="flex flex-col items-center gap-2"></div>
+      <div id="loading-collection" class="grid place-content-center">
+        <div id="collections-container"
+          class="flex [.htmx-request_&]:hidden [&.htmx-request]:hidden flex-col items-center gap-2">
+        </div>
+        <img id="" class="w-12 lg:w-16 hidden [.htmx-request_&]:block [&.htmx-request]:block animate-spin"
+          src="/static/icons/ibis.svg">
+      </div>
     </main>
   </div>
 </body>

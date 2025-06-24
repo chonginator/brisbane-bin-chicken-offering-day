@@ -3,13 +3,14 @@ function combobox(tree = document) {
     const combobox = comboboxRoot.querySelector("[role=combobox]")
     const listbox = comboboxRoot.querySelector("[role=listbox]")
     const options = [...listbox.querySelectorAll("[role=option]")]
+    const dropdownContent = comboboxRoot.querySelector("#dropdown-content")
 
     const controller = new AbortController()
     const signal = controller.signal
 
     let isArrowNavigating = false
 
-    const isOpen = () => !listbox.hidden
+    const isOpen = () => combobox.getAttribute("aria-expanded") === "true"
     
     comboboxRoot.addEventListener("focus", e => {
       toggleCombobox(true)
@@ -59,7 +60,7 @@ function combobox(tree = document) {
 
     comboboxRoot.addEventListener("htmx:beforeSwap", () => {
       controller.abort()
-    })
+    }, { signal })
 
     listbox.addEventListener("mouseover", e => {
       const option = e.target.closest("[role=option]")
@@ -68,16 +69,20 @@ function combobox(tree = document) {
       }
     }, { signal })
 
+    listbox.addEventListener("click", e => {
+      toggleCombobox(false)
+    })
+
     toggleCombobox(isOpen())
 
     function toggleCombobox(open = !isOpen()) {
-      if (options.length == 0) {
-        return
-      }
       if (open) {
         listbox.scrollTop = 0
         combobox.focus()
         combobox.setAttribute("aria-expanded", true)
+        if (options.length == 0) {
+          return
+        }
         selectOption(options[0])
       } else {
         combobox.blur()
@@ -110,4 +115,9 @@ function combobox(tree = document) {
 }
 
 addEventListener("DOMContentLoaded", () => combobox())
-addEventListener("htmx:afterSwap", () => combobox())
+
+addEventListener("htmx:afterSwap", (e) => {
+  if (e.target.closest("[data-combobox]")) {
+    combobox()
+  }
+})
