@@ -6,83 +6,49 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/chonginator/brisbane-bin-chicken-offering-day/internal/database"
 	"github.com/chonginator/brisbane-bin-chicken-offering-day/internal/resource"
 )
 
-type AddressesPageData struct {
+type SearchData struct {
 	Addresses []resource.Resource
+	Query     string
 }
 
 func (cfg *Config) HandlerAddresses(w http.ResponseWriter, r *http.Request) {
-	streetSlug := r.PathValue("street")
-	if streetSlug == "" {
-		err := fmt.Errorf("street name parameter is required")
-		cfg.respondWithError(w, http.StatusInternalServerError, err.Error(), err)
+	query := r.URL.Query().Get("q")
+	if query == "" {
+		cfg.respondWithHTML(w, "placeholder_results.html", nil)
 		return
 	}
 
-	streetName := toNameFromSlug(streetSlug)
-	dbAddresses, err := cfg.db.GetAddressesByStreetName(context.Background(), streetName)
+	safeQuery := strings.ReplaceAll(query, `"`, `""`)
+	ftsQuery := fmt.Sprintf("\"%s\"*", safeQuery)
+	dbAddresses, err := cfg.db.SearchAddresses(context.Background(), database.SearchAddressesParams{
+		Limit: 10,
+		Query: ftsQuery,
+	})
 	if err != nil {
-		err = fmt.Errorf("couldn't find addresses for %s: %w", streetName, err)
-		cfg.respondWithError(w, http.StatusInternalServerError, "failed to fetch addresses", err)
+		cfg.respondWithError(w, http.StatusInternalServerError, "failed to search addresses", err)
 		return
+	}
+
+	if len(dbAddresses) == 0 {
+		cfg.respondWithHTML(w, "no_results.html", SearchData{
+			Query: query,
+		})
 	}
 
 	addresses := make([]resource.Resource, len(dbAddresses))
 
-	for i, address := range dbAddresses {
-		var unitNumber, houseNumberSuffix string
-		if address.UnitNumber.Valid {
-			unitNumber = address.UnitNumber.String
-		}
-		if address.HouseNumberSuffix.Valid {
-			houseNumberSuffix = address.HouseNumberSuffix.String
-		}
-
-		addressString, err := toAddressString(unitNumber, address.HouseNumber, houseNumberSuffix, streetName)
-		if err != nil {
-			err = fmt.Errorf("couldn't build address string: %w", err)
-			cfg.respondWithError(w, http.StatusInternalServerError, err.Error(), err)
-			return
-		}
-
+	for i, row := range dbAddresses {
 		addresses[i] = resource.Resource{
-			Slug: address.PropertyID,
-			Name: addressString,
+			Slug: row.PropertyID,
+			Name: row.FormattedAddress,
 		}
 	}
 
-	query := r.URL.Query().Get("q")
-	if r.URL.Query().Has("q") {
-		addresses = resource.FilterByName(addresses, query)
-	}
-
-	cfg.respondWithHTML(w, "addresses.html", AddressesPageData{
+	cfg.respondWithHTML(w, "addresses_list.html", SearchData{
 		Addresses: addresses,
 	})
-}
-
-func toAddressString(unitNumber, houseNumber, houseNumberSuffix, streetName string) (string, error) {
-	var b strings.Builder
-
-	writes := []struct {
-		condition bool
-		val       string
-	}{
-		{unitNumber != "", unitNumber + "/"},
-		{true, houseNumber},
-		{houseNumberSuffix != "", houseNumberSuffix},
-		{true, " " + streetName},
-	}
-
-	for _, w := range writes {
-		if w.condition {
-			if _, err := b.WriteString(w.val); err != nil {
-				return "", fmt.Errorf("failed to write address: %w", err)
-			}
-		}
-	}
-
-	return b.String(), nil
 }

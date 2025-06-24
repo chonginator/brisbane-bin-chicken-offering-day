@@ -1,0 +1,13 @@
+<div id="dropdown-content">
+  <ul id="listbox" role="listbox">
+    {{ range $i, $address := .Addresses }}
+    <li id="option-{{ $i }}" class="flex w-full scroll-my-2 aria-selected:bg-grey-100 rounded-sm" role="option">
+      <button hx-get="/collections/{{ $address.Slug }}" hx-target="#collections-container"
+        hx-indicator="#loading-collection"
+        class="font-satoshi text-base lg:text-xl text-graphite-500 w-full px-8 lg:px-10 py-2 lg:py-4 text-left hover:cursor-pointer">
+        {{ $address.Name }}
+      </button>
+    </li>
+    {{ end }}
+  </ul>
+</div>

@@ -1,25 +1,3 @@
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Brisbane Bin Chicken Offering Day</title>
-  <script src="/static/js/htmx.min.js"></script>
-</head>
-
-<body hx-boost="true">
-  <h1>Brisbane Bin Chicken Day</h1>
-  <main id="main">
-    <a href="#" hx-on:click="history.back()">Back</a>
-    <h2>Collections</h2>
-    <div>
-      {{ range .Collections }}
-      <p>{{ .Day }}</p>
-      <p>It's {{ .BinWeekType }} bin week!</p>
-      {{ end }}
-    </div>
-  </main>
-</body>
-
-</html>
+<p class="font-bevellier font-semibold text-2xl lg:text-4xl uppercase text-graphite-500 text-center">{{ .Collection.Date
+  }}</p>
+<p class="font-satoshi text-base lg:text-2xl text-graphite-500">{{ .Collection.Message }}</p>

@@ -36,7 +36,7 @@ INNER JOIN streets
 ON addresses.street_id = streets.id
 WHERE streets.name = :name;
 
--- name: GetCollectionSchedulesByPropertyID :many
+-- name: GetCollectionScheduleByPropertyID :one
 SELECT collection_day, zone
 FROM addresses
 WHERE property_id = :property_id;
@@ -46,3 +46,9 @@ SELECT *
 FROM addresses
 LIMIT :batch_size
 OFFSET :offset;
+
+-- name: SearchAddresses :many
+SELECT property_id, search_text AS formatted_address
+FROM address_search
+WHERE search_text MATCH :query
+LIMIT :limit;

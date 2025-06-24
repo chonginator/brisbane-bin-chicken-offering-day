@@ -41,7 +41,7 @@ func main() {
 	}
 
 	binCollectionWeeksDataPath := filepath.Join(dataDir, "waste-collection-days-collection-weeks.json")
-	err = seedBinCollectionWeeks(dbQueries, binCollectionWeeksDataPath)
+	err = seedCollectionWeeks(dbQueries, binCollectionWeeksDataPath)
 	if err != nil {
 		log.Fatalf("Error seeding bin collection weeks data: %v", err)
 	}

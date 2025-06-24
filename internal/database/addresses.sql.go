@@ -171,27 +171,51 @@ func (q *Queries) GetAddressesByStreetName(ctx context.Context, name string) ([]
 	return items, nil
 }
 
-const getCollectionSchedulesByPropertyID = `-- name: GetCollectionSchedulesByPropertyID :many
+const getCollectionScheduleByPropertyID = `-- name: GetCollectionScheduleByPropertyID :one
 SELECT collection_day, zone
 FROM addresses
 WHERE property_id = ?1
 `
 
-type GetCollectionSchedulesByPropertyIDRow struct {
+type GetCollectionScheduleByPropertyIDRow struct {
 	CollectionDay string
 	Zone          string
 }
 
-func (q *Queries) GetCollectionSchedulesByPropertyID(ctx context.Context, propertyID string) ([]GetCollectionSchedulesByPropertyIDRow, error) {
-	rows, err := q.db.QueryContext(ctx, getCollectionSchedulesByPropertyID, propertyID)
+func (q *Queries) GetCollectionScheduleByPropertyID(ctx context.Context, propertyID string) (GetCollectionScheduleByPropertyIDRow, error) {
+	row := q.db.QueryRowContext(ctx, getCollectionScheduleByPropertyID, propertyID)
+	var i GetCollectionScheduleByPropertyIDRow
+	err := row.Scan(&i.CollectionDay, &i.Zone)
+	return i, err
+}
+
+const searchAddresses = `-- name: SearchAddresses :many
+SELECT property_id, search_text AS formatted_address
+FROM address_search
+WHERE search_text MATCH ?1
+LIMIT ?2
+`
+
+type SearchAddressesParams struct {
+	Query string
+	Limit int64
+}
+
+type SearchAddressesRow struct {
+	PropertyID       string
+	FormattedAddress string
+}
+
+func (q *Queries) SearchAddresses(ctx context.Context, arg SearchAddressesParams) ([]SearchAddressesRow, error) {
+	rows, err := q.db.QueryContext(ctx, searchAddresses, arg.Query, arg.Limit)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []GetCollectionSchedulesByPropertyIDRow
+	var items []SearchAddressesRow
 	for rows.Next() {
-		var i GetCollectionSchedulesByPropertyIDRow
-		if err := rows.Scan(&i.CollectionDay, &i.Zone); err != nil {
+		var i SearchAddressesRow
+		if err := rows.Scan(&i.PropertyID, &i.FormattedAddress); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

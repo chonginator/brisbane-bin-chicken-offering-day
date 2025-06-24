@@ -1,0 +1,31 @@
+{{ define "combobox" }}
+<script src="/static/components/combobox.js"></script>
+
+<div id="combobox-container" class="flex flex-col gap-2 relative" data-combobox>
+  <form
+    class="peer flex gap-2 lg:gap-4 w-full bg-white p-4 outline-2 outline-grey-300 focus-within:outline-graphite-500 rounded-lg">
+    <label id="loading-address" class="flex items-center relative" for="address-search">
+      <svg class="opacity-100 [.htmx-request_&]:opacity-0 [&.htmx-request]:opacity-0" width="24" height="24"
+        viewBox="0 0 23 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path fill-rule="evenodd" clip-rule="evenodd"
+          d="M10.2353 0.735291C8.6407 0.735426 7.06925 1.1169 5.65207 1.84787C4.23488 2.57885 3.01305 3.63813 2.08851 4.93735C1.16398 6.23657 0.563541 7.73805 0.337304 9.31652C0.111067 10.895 0.265588 12.5047 0.787975 14.0113C1.31036 15.5179 2.18547 16.8777 3.34028 17.9773C4.49509 19.0769 5.89612 19.8844 7.42649 20.3325C8.95685 20.7805 10.5722 20.8561 12.1377 20.5528C13.7032 20.2496 15.1735 19.5764 16.4259 18.5894L20.7224 22.8859C20.9442 23.1002 21.2414 23.2188 21.5499 23.2161C21.8584 23.2134 22.1534 23.0897 22.3716 22.8715C22.5897 22.6534 22.7134 22.3583 22.7161 22.0499C22.7188 21.7414 22.6002 21.4442 22.3859 21.2223L18.0894 16.9259C19.2518 15.4513 19.9755 13.6793 20.1778 11.8126C20.38 9.94594 20.0527 8.06002 19.2332 6.37069C18.4137 4.68137 17.1352 3.25689 15.5439 2.26027C13.9526 1.26365 12.1129 0.735164 10.2353 0.735291ZM2.58824 10.7353C2.58824 8.70716 3.39391 6.76211 4.82801 5.328C6.26211 3.8939 8.20717 3.08823 10.2353 3.08823C12.2634 3.08823 14.2085 3.8939 15.6426 5.328C17.0767 6.76211 17.8824 8.70716 17.8824 10.7353C17.8824 12.7634 17.0767 14.7085 15.6426 16.1426C14.2085 17.5767 12.2634 18.3824 10.2353 18.3824C8.20717 18.3824 6.26211 17.5767 4.82801 16.1426C3.39391 14.7085 2.58824 12.7634 2.58824 10.7353Z"
+          fill="#72716C" />
+      </svg>
+      <img class="hidden [.htmx-request_&]:block [&.htmx-request]:block absolute animate-spin"
+        src="/static/icons/ibis.svg" />
+      <span id="address-search-label" class="sr-only">Search For Your Address</span>
+    </label>
+    <input id="address-search" type="search" name="q" value="{{ .Query }}" placeholder="Search addresses..."
+      hx-get="/addresses" hx-trigger="input changed delay:500ms" hx-target="#dropdown-content" hx-swap="outerHTML"
+      hx-indicator="#loading-address"
+      class="font-satoshi font-normal text-base lg:text-xl text-graphite-200 w-full bg-white focus-within:outline-none [&::-webkit-search-cancel-button]:hidden"
+      autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-activedescendant
+      aria-controls="listbox" aria-labelledby="address-search-label">
+  </form>
+  <div id="dropdown-container"
+    class="absolute bottom-0 left-0 right-0 translate-y-[calc(100%+0.5rem)] invisible peer-has-aria-expanded:visible flex flex-col max-h-[232px] lg:max-h-[272px] p-4 overflow-y-auto bg-white border-2 border-grey-200 rounded-lg shadow-md"
+    tabindex="1">
+    {{ template "placeholder_results" }}
+  </div>
+</div>
+{{ end }}
