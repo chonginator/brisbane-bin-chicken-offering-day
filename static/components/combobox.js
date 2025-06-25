@@ -41,14 +41,15 @@ function combobox(tree = document) {
           }, 100)
           break
         case "Enter":
+          console.log(`enter on active element: ${getSelectedOptionIndex()}`)
           const selectedIndex = getSelectedOptionIndex()
           if (selectedIndex === null) {
             break
           }
           const selectedOption = options[selectedIndex]
-          const linkEl = selectedOption.querySelector("a")
-          if (linkEl) {
-            linkEl.click()
+          const button = selectedOption.querySelector("button")
+          if (button) {
+            button.click()
             toggleCombobox(false)
           }
           break
